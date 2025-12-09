@@ -1,13 +1,15 @@
 const mongoose = require('mongoose');
+const config = require('config');
+const dbgr = require("debug")("development:DB");
 
 
-module.exports.mongoooseConnection = () => {
-    try {
-        mongoose.connect(``);
-        console.log("DB Connected");
 
-    } catch (error) {
-        console.error(error);
 
-    }
-}
+
+mongoose.connect(`${config.get('MONGODB_URL')}/devtinder`).then(() => {
+    dbgr("DB Connected");
+}).catch((error) => {
+    dbgr(error);
+});
+
+module.exports = mongoose.connection;
