@@ -23,7 +23,9 @@ app.use(cookieParser());
 
 
 const authRoutes = require('./routes/authRoutes');
+const feedRoutes = require('./routes/feedRoutes');
 app.use("/auth", authRoutes);
+app.use("/api", feedRoutes);
 
 app.get('/', (req, res) => {
     res.send("Hello World");

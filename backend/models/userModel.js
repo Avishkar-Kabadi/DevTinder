@@ -26,26 +26,36 @@ const userSchema = new mongoose.Schema(
             required: true,
         },
 
-        gender: {
-            type: String,
-        },
+        gender: String,
 
-        photoUrl: {
-            type: String,
-        },
+        photoUrl: String,
 
-        skills: {
-            type: [],
+        age: Number,
 
-        },
+        skills: [String],
+
+        requests: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            }
+        ],
+
+        connections: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            }
+        ],
 
         about: {
             type: String,
             trim: true,
         },
+
         isProfileCompleted: {
             type: Boolean,
-            default: false
+            default: false,
         }
     },
     {
@@ -53,4 +63,4 @@ const userSchema = new mongoose.Schema(
     }
 );
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);

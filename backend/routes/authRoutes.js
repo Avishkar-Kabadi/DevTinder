@@ -18,4 +18,6 @@ route.put('/update-profile', isLoggedIn, upload.single("image"), updateProfile);
 route.get('/user-profile', isLoggedIn, getUserProfile);
 
 
+
+
 module.exports = route;

@@ -1,33 +1,22 @@
 import axios from "axios";
-import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
-import { removeUser } from "../store/userSlice";
+import { Link } from "react-router-dom";
 import { baseUrl } from "../utils/constants";
 
 const Navbar = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const user = useSelector((store) => store.user);
-
-  useEffect(() => {
-    if (!user) {
-      return navigate("/login");
-    }
-  }, [user]);
-
-  if (!user?.isProfileCompleted) return;
+  const user = useSelector((store) => store?.user) || null;
 
   const handleSubmit = async () => {
     try {
       await axios.post(baseUrl + `/auth/logout`, {}, { withCredentials: true });
-      dispatch(removeUser());
+      dispatch({ type: "auth/logout" });
     } catch (error) {
       console.log(error);
     }
   };
   return (
-    <div className="navbar bg-base-300 shadow-sm">
+    <div className="navbar sticky   bg-base-300 shadow-sm">
       <div className="flex-1">
         <Link to="/" className="btn btn-ghost text-xl">
           🧑‍💻 DevTinder
@@ -53,15 +42,18 @@ const Navbar = () => {
             </div>
             <ul
               tabIndex="-1"
-              className="menu menu-sm dropdown-content bg-base-200 rounded-box z-1 mt-2 w-32 p-2 shadow"
+              className="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-2 w-32 p-2 shadow"
             >
               <li>
-                <Link to="/profile" className="justify-between">
+                <Link to="/edit-profile" className="justify-between">
                   Profile
                 </Link>
               </li>
               <li>
-                <Link to="/">Settings</Link>
+                <Link to="/connections">Connections</Link>
+              </li>
+              <li>
+                <Link to="/requests">Requests</Link>
               </li>
               <li onClick={handleSubmit}>
                 <Link to="/login">Logout</Link>

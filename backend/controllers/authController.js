@@ -124,7 +124,7 @@ module.exports.logoutUser = async (req, res) => {
 
 module.exports.updateProfile = async (req, res) => {
     try {
-        const { about, gender, skills } = req.body;
+        const { about, gender, skills, age } = req.body;
 
         const skillsArray = typeof skills === "string" ? JSON.parse(skills) : skills;
 
@@ -138,10 +138,11 @@ module.exports.updateProfile = async (req, res) => {
             photoUrl = cloud.secure_url;
         }
 
-        const updatedUser = await userModel 
+        const updatedUser = await userModel
             .findByIdAndUpdate(
                 req.user._id,
                 {
+                    age,
                     about,
                     gender,
                     skills: skillsArray,
@@ -158,7 +159,7 @@ module.exports.updateProfile = async (req, res) => {
         });
     } catch (error) {
         dbgr("Update Profile", error);
-        return res.status(500).json({ message: "Server error", error });
+        return res.status(500).json({ message: "Internal server error", error });
     }
 };
 

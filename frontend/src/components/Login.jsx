@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { addUser } from "../store/userSlice";
 import { baseUrl } from "../utils/constants";
-import { checkValidData } from "../utils/validate";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -14,12 +13,6 @@ const Login = () => {
   const [error, setError] = useState(null);
 
   const handleSubmit = async () => {
-    const message = checkValidData(email, password);
-
-    if (message) {
-      setError(message);
-      return null;
-    }
     try {
       setError(null);
       const res = await axios.post(
