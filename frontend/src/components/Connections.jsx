@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { baseUrl } from "../utils/constants";
 
-import { addConnections } from "../store/connectionSlice";
+import { addConnections,removeConnection } from "../store/connectionSlice";
 
 const Connections = () => {
   const dispatch = useDispatch();
@@ -31,7 +31,9 @@ const Connections = () => {
           withCredentials: true,
         }
       );
-      fetchConnections();
+      dispatch(removeConnection(id));
+
+      // fetchConnections();
     } catch (error) {
       console.log(error);
     }

@@ -6,24 +6,37 @@ const userModel = require('../models/userModel');
 
 module.exports.fetchFeed = async (req, res) => {
     try {
+        const currentId = req.user._id;
 
-        // Write a logic to filterout your own connections and users which you've already sent request(i.e. Filterout users which have loggedIn users id in there requests :[])
+        const me = await userModel
+            .findById(currentId)
+            .select("notInterested");
 
-        const data = await userModel.find().select('-password -isProfileCompleted -updatedAt -__v');
-        if (!data) return res.status(400).json({ message: "Failed to fetch feed-data" });
+        const data = await userModel.find({
+            _id: {
+                $ne: currentId,
+                $nin: me.notInterested
+            },
+            connections: { $nin: [currentId] },
+            requests: { $nin: [currentId] },
+        })
+            .select("-password -email -createdAt -updatedAt -isProfileCompleted -__v -requests -connections -notInterested");
 
-        const filterData = data.filter(
-            (user) => user._id.toString() !== req.user._id.toString()
-        );
+        return res.status(200).json({
+            message: "Feed-data fetched",
+            data
+        });
 
-
-
-        return res.status(200).json({ message: "Feed-data fetched", data: filterData });
     } catch (error) {
-        dbgr("Fetch Feed :", error.message)
-        return res.status(500).json({ message: "Internal server error", error });
+        return res.status(500).json({
+            message: "Internal server error",
+            error,
+        });
     }
-}
+};
+
+
+
 
 module.exports.sendRequest = async (req, res) => {
     const { _id } = req.user;
@@ -45,6 +58,27 @@ module.exports.sendRequest = async (req, res) => {
         return res.status(500).json({ message: "Internal server error", error });
     }
 };
+
+module.exports.markNotInterested = async (req, res) => {
+    const { _id } = req.user;
+    const userId = req.params.id;
+
+    try {
+        await userModel.findByIdAndUpdate(
+            _id,
+            { $addToSet: { notInterested: userId } },
+            { new: true }
+        );
+
+        return res.json({
+            message: "Profile marked as not interested!",
+        });
+
+    } catch (error) {
+        dbgr("Marked as not Interested :", error.message)
+        return res.status(500).json({ message: "Internal server error", error });
+    }
+}
 
 
 module.exports.fetchAllRequest = async (req, res) => {
@@ -78,44 +112,36 @@ module.exports.acceptRequest = async (req, res) => {
     const userId = req.params.id;
 
     try {
-        const user = await userModel.findById(_id).select("requests connections");
+        const user = await userModel.findById(_id).select("requests");
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
 
-        if (!user.requests.includes(userId)) {
+        if (!user.requests.map(id => id.toString()).includes(userId)) {
             return res.status(400).json({ message: "Request does not exist" });
         }
 
-        user.requests = user.requests.filter(
-            (id) => id.toString() !== userId
-        );
+        await userModel.findByIdAndUpdate(_id, {
+            $pull: { requests: userId },
+            $addToSet: { connections: userId }
+        });
 
-        if (!user.connections.includes(userId)) {
-            user.connections.push(userId);
-        }
-
-        await user.save();
-
-
-        await userModel.findByIdAndUpdate(
-            userId,
-            {
-                $pull: { requests: _id },
-                $addToSet: { connections: _id },
-            }
-        );
+        await userModel.findByIdAndUpdate(userId, {
+            $pull: { requests: _id },
+            $addToSet: { connections: _id }
+        });
 
         return res.status(200).json({
             message: "Request accepted successfully",
         });
 
     } catch (error) {
-        dbgr("Accept Request :", error.message)
+        dbgr("Accept Request :", error.message);
         return res.status(500).json({ message: "Internal server error", error });
     }
 };
+
 
 module.exports.declineRequest = async (req, res) => {
     const { _id } = req.user;

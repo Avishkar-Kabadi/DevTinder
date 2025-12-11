@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addRequests } from "../store/requestSlice";
+import { addRequests, removeReqest } from "../store/requestSlice";
 import { baseUrl } from "../utils/constants";
 
 const Requests = () => {
@@ -19,31 +19,17 @@ const Requests = () => {
 
   const requests = useSelector((store) => store.requests);
 
-  const handleAccept = async (id) => {
+  const handleRequest = async (status, id) => {
     try {
       const res = await axios.post(
-        baseUrl + `/api/accept-request/${id}`,
+        baseUrl + `/api/${status}-request/${id}`,
         {},
         {
           withCredentials: true,
         }
       );
-      fetchRequests();
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const handleDecline = async (id) => {
-    try {
-      const res = await axios.post(
-        baseUrl + `/api/decline-request/${id}`,
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      fetchRequests();
+      dispatch(removeReqest(id));
+      // fetchRequests();
     } catch (error) {
       console.log(error);
     }
@@ -94,13 +80,13 @@ const Requests = () => {
 
               <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
                 <button
-                  onClick={() => handleAccept(request._id)}
+                  onClick={() => handleRequest("accept", request._id)}
                   className="btn btn-primary rounded-2xl hover:bg-primary-focus transition"
                 >
                   Accept
                 </button>
                 <button
-                  onClick={() => handleDecline(request._id)}
+                  onClick={() => handleRequest("decline", request._id)}
                   className="btn btn-secondary rounded-2xl hover:bg-secondary-focus transition"
                 >
                   Remove

@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
-import { Body } from "./components";
+import Body from "./components/Body";
 import CompleteProfile from "./components/CompleteProfile";
 import Feed from "./components/Feed";
 import Login from "./components/Login";

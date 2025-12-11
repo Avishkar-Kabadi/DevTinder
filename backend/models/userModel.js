@@ -48,6 +48,13 @@ const userSchema = new mongoose.Schema(
             }
         ],
 
+        notInterested: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            }
+        ],
+
         about: {
             type: String,
             trim: true,

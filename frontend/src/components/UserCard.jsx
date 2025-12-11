@@ -1,22 +1,26 @@
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { removeUserFeed } from "../store/feedSlice";
 import { baseUrl } from "../utils/constants";
 
 const UserCard = ({ user }) => {
+  const dispatch = useDispatch();
+
   const cleanSkills =
     user?.skills?.map((skill) => skill.replace(/^"|"$/g, "")) || [];
 
-  const handleSentRequest = async (id) => {
+  const handleSubmit = async (status, id) => {
     console.log("Button is clicked");
 
     try {
       const res = await axios.post(
-        baseUrl + `/api/send-request/${id}`,
+        baseUrl + `/api/${status}/${id}`,
         {},
         {
           withCredentials: true,
         }
       );
-
+      dispatch(removeUserFeed(id));
       console.log(res.data.message);
     } catch (error) {
       console.log(error.response?.data);
@@ -58,9 +62,16 @@ const UserCard = ({ user }) => {
         )}
 
         <div className="card-actions justify-center mt-4">
-          <button className="btn btn-outline w-32 rounded-full">Ignore</button>
           <button
-            onClick={() => handleSentRequest(user?._id)}
+            onClick={() => handleSubmit("mark-not-interested", user?._id)}
+            disabled={!user?._id}
+            className="btn btn-outline w-32 rounded-full"
+          >
+            Ignore
+          </button>
+          <button
+            disabled={!user?._id}
+            onClick={() => handleSubmit("send-request", user?._id)}
             className="btn btn-primary w-32 rounded-full text-white"
           >
             Interested
