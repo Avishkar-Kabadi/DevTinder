@@ -2,11 +2,12 @@ import axios from "axios";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { baseUrl } from "../utils/constants";
-
-import { addConnections,removeConnection } from "../store/connectionSlice";
+import { useNavigate } from "react-router-dom";
+import { addConnections, removeConnection } from "../store/connectionSlice";
 
 const Connections = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const fetchConnections = async () => {
     try {
       const res = await axios.get(baseUrl + "/api/connections", {
@@ -19,7 +20,6 @@ const Connections = () => {
       console.log(error);
     }
   };
-
   const connections = useSelector((store) => store.connections);
 
   const handleRemoveConnection = async (id) => {
@@ -34,6 +34,18 @@ const Connections = () => {
       dispatch(removeConnection(id));
 
       // fetchConnections();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleConversation = async (id) => {
+    try {
+      const res = await axios.get(baseUrl + `/api/chat/conversation/${id}`, {
+        withCredentials: true,
+      });
+      console.log("Conversation:", res.data.data);
+      navigate("/chats");
     } catch (error) {
       console.log(error);
     }
@@ -83,7 +95,10 @@ const Connections = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
-                <button className="bg-primary text-white px-5 py-2 rounded-2xl hover:bg-primary-focus transition">
+                <button
+                  onClick={() => handleConversation(connection?._id)}
+                  className="bg-primary text-white px-5 py-2 rounded-2xl hover:bg-primary-focus transition"
+                >
                   Message
                 </button>
                 <button

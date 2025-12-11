@@ -8,6 +8,8 @@ import SignUp from "./components/SignUp";
 import EditProfile from "./components/EditProfile";
 import Connections from "./components/Connections";
 import Requests from "./components/Requests";
+import Chats from "./components/Chats";
+import Message from "./components/Message";
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
           <Route path="edit-profile" element={<EditProfile />} />
           <Route path="requests" element={<Requests />} />
           <Route path="connections" element={<Connections />} />
+          <Route path="chats" element={<Chats />} />
+          <Route path="/chat/:conversationId" element={<Message />} />
         </Route>
       </Routes>
     </BrowserRouter>

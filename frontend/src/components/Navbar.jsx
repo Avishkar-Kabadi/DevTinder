@@ -16,7 +16,7 @@ const Navbar = () => {
     }
   };
   return (
-    <div className="navbar sticky   bg-base-300 shadow-sm">
+    <div className="navbar sticky z-50   bg-base-300 shadow-sm">
       <div className="flex-1">
         <Link to="/" className="btn btn-ghost text-xl">
           🧑‍💻 DevTinder
@@ -42,12 +42,15 @@ const Navbar = () => {
             </div>
             <ul
               tabIndex="-1"
-              className="menu menu-sm dropdown-content bg-base-200 rounded-box z-10 mt-2 w-32 p-2 shadow"
+              className="menu menu-sm dropdown-content bg-base-200 rounded-box z-50 mt-2 w-32 p-2 shadow"
             >
               <li>
                 <Link to="/edit-profile" className="justify-between">
                   Profile
                 </Link>
+              </li>
+              <li>
+                <Link to="/chats">Messages</Link>
               </li>
               <li>
                 <Link to="/connections">Connections</Link>

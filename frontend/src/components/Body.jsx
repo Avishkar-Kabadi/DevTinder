@@ -5,6 +5,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { addUser } from "../store/userSlice";
 import { baseUrl } from "../utils/constants";
 import Navbar from "./Navbar";
+import { connectSocket } from "../utils/socket";
 
 const Body = () => {
   const dispatch = useDispatch();
@@ -15,6 +16,7 @@ const Body = () => {
       const res = await axios.get(baseUrl + "/auth/user-profile", {
         withCredentials: true,
       });
+      connectSocket();
       dispatch(addUser(res.data.user));
       navigate("/");
     } catch (error) {
