@@ -9,6 +9,10 @@ const messageSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
+    receiver: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    },
     text: String,
     photoUrl: String
 }, { timestamps: true });

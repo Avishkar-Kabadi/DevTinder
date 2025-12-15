@@ -1,39 +1,21 @@
-import axios from "axios";
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { Outlet, useNavigate } from "react-router-dom";
-import { addUser } from "../store/userSlice";
-import { baseUrl } from "../utils/constants";
+import { Outlet } from "react-router-dom";
+
 import Navbar from "./Navbar";
-import { connectSocket } from "../utils/socket";
+import Notification from "./Notification";
+import Spinner from "./Spinner";
+import { useSelector } from "react-redux";
 
 const Body = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const fetchUserProfile = async () => {
-    try {
-      const res = await axios.get(baseUrl + "/auth/user-profile", {
-        withCredentials: true,
-      });
-      connectSocket();
-      dispatch(addUser(res.data.user));
-      navigate("/");
-    } catch (error) {
-      console.log(error);
-      navigate("/login");
-    }
-  };
-
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
-
+  const notification = useSelector((store) => store.chat?.notifications);
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      <Outlet />
-    </>
+      {notification && <Notification />}
+      {/* <Spinner /> */}
+      <div className="flex-1">
+        <Outlet />
+      </div>
+    </div>
   );
 };
 

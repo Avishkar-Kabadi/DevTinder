@@ -1,12 +1,18 @@
 import axios from "axios";
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
+import {
+  clearNewMessage,
+  removeActiveConversationId,
+  setActiveConversationId,
+} from "../store/chatSlice";
 import { baseUrl } from "../utils/constants";
 import { socket } from "../utils/socket";
 
 const Message = () => {
+  const dispatch = useDispatch();
   const { conversationId } = useParams();
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
@@ -20,7 +26,6 @@ const Message = () => {
     location.state || {};
 
   const getSenderId = (msg) => {
-    // Safely return the sender ID whether it's an object or a string
     return msg?.sender?._id || msg?.sender;
   };
 
@@ -72,11 +77,13 @@ const Message = () => {
       socket.emit("sendMessage", {
         conversationId,
         message: msg,
+        receiverId: msg.receiver,
+        sender: user?.firstName + " " + user?.lastName,
+        photoUrl: user?.photoUrl,
         recipientId: "...",
       });
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Failed to send message.");
       setText(originalText);
       setMessages((prev) => prev.filter((m) => m._id !== tempId));
     }
@@ -93,6 +100,8 @@ const Message = () => {
   useEffect(() => {
     if (!conversationId) return;
 
+    dispatch(setActiveConversationId(conversationId));
+
     socket.emit("joinConversation", conversationId);
 
     const handleReceiveMessage = (msg) => {
@@ -107,11 +116,13 @@ const Message = () => {
 
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
+      dispatch(removeActiveConversationId());
     };
   }, [conversationId, currentUserId]);
 
   useEffect(() => {
     if (conversationId) fetchMessages();
+    dispatch(clearNewMessage({ conversationId }));
   }, [conversationId]);
 
   useEffect(() => {
@@ -120,7 +131,7 @@ const Message = () => {
 
   return (
     <div className="w-full h-[90vh] flex justify-center bg-base-200">
-      <div className="w-full max-w-4xl flex flex-col border border-base-300 rounded-lg overflow-hidden bg-white">
+      <div className="w-full max-w-full flex flex-col border border-base-300  overflow-hidden bg-white">
         <div className="p-4 bg-base-300 shadow-md font-extrabold text-xl text-primary sticky top-0 z-0">
           <div display="flex" className="flex items-center gap-3">
             <img
@@ -151,7 +162,7 @@ const Message = () => {
                 className={`flex ${isMine ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[70%] lg:max-w-[50%] p-3 rounded-2xl shadow-md 
+                  className={`max-w-[70%] lg:max-w-[50%] p-3 rounded-2xl shadow-md
                                         ${
                                           isMine
                                             ? "bg-primary text-primary-content rounded-br-none"

@@ -1,4 +1,4 @@
 {
-    "MONGODB_URL": "mongodb://127.0.0.1:27017",
+    "MONGODB_URL": "mongodb+srv://razergaming1828:KT7OHkfLm5S9d1EZ@cluster0.sj0p6i4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
     "PORT": "5000"
 }

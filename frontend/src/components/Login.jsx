@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { addUser } from "../store/userSlice";
 import { baseUrl } from "../utils/constants";
-import { connectSocket } from "../utils/socket";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -18,16 +17,19 @@ const Login = () => {
       setError(null);
       const res = await axios.post(
         baseUrl + "/auth/login",
+        { email, password },
         {
-          email,
-          password,
-        },
-        { withCredentials: true }
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
 
       const { data } = res;
       dispatch(addUser(data.user));
-      connectSocket();
+      initGlobalSocketListeners();
+
       navigate("/");
       setEmail("");
       setPassword("");

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const StepPhoto = ({ formData, setFormData, back, onSubmit }) => {
+const StepPhoto = ({ formData, setFormData, back, loading, onSubmit }) => {
   const [preview, setPreview] = useState(
     formData.image ? URL.createObjectURL(formData.image) : null
   );
@@ -20,8 +20,9 @@ const StepPhoto = ({ formData, setFormData, back, onSubmit }) => {
       <input
         type="file"
         accept="image/*"
-        className="input input-bordered w-full "
+        className="input input-bordered w-full"
         onChange={handleFileChange}
+        disabled={loading}
       />
 
       {preview && (
@@ -33,15 +34,17 @@ const StepPhoto = ({ formData, setFormData, back, onSubmit }) => {
       )}
 
       <div className="flex justify-between mt-6">
-        <button className="btn" onClick={back}>
+        <button className="btn" onClick={back} disabled={loading}>
           ← Back
         </button>
+
         <button
-          disabled={!formData.image}
-          className="btn btn-success"
+          disabled={!formData.image || loading}
+          className="btn btn-success flex items-center gap-2"
           onClick={onSubmit}
         >
-          Finish ✔
+          {loading && <span className="loading loading-spinner loading-sm" />}
+          {loading ? "Uploading..." : "Finish ✔"}
         </button>
       </div>
     </div>

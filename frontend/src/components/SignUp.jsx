@@ -6,6 +6,7 @@ import { addUser } from "../store/userSlice";
 import { baseUrl } from "../utils/constants";
 import { checkValidData } from "../utils/validate";
 
+
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

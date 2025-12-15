@@ -1,9 +1,8 @@
 const Conversation = require("../models/conversationModel");
 const Message = require("../models/messageModel");
 
-// ---------------------------------------------
-// Safe Socket Emitter for One-to-One Notification
-// ---------------------------------------------
+
+
 const emitSocketEvent = (req, event, data) => {
     try {
         if (req.io && data.receiverId) {
@@ -14,9 +13,6 @@ const emitSocketEvent = (req, event, data) => {
     }
 };
 
-// ---------------------------------------------
-// Create or Get Conversation (Strict 1-to-1)
-// ---------------------------------------------
 module.exports.createOrGetConversation = async (req, res) => {
     try {
         const senderId = req.user._id;
@@ -49,9 +45,7 @@ module.exports.createOrGetConversation = async (req, res) => {
     }
 };
 
-// ---------------------------------------------
-// Send Message (One-to-One Chat Only)
-// ---------------------------------------------
+
 module.exports.sendMessage = async (req, res) => {
     try {
         const { text, photoUrl } = req.body;
@@ -68,28 +62,28 @@ module.exports.sendMessage = async (req, res) => {
             return res.status(404).json({ message: "Conversation not found" });
         }
 
-        // Create the message
-        const message = await Message.create({
-            conversationId,
-            sender: senderId,
-            text: text || "",
-            photoUrl: photoUrl || null,
-        });
-
-        // Update last message & timestamp
-        conversation.lastMessage = message._id;
-        await conversation.save();
-
-        // Identify the other user in this one-to-one conversation
         const receiverId = conversation.participants.find(
             (id) => id.toString() !== senderId.toString()
         );
 
-        // Emit message to receiver only
-        emitSocketEvent(req, "new_message", {
+
+        const message = await Message.create({
+            conversationId,
+            sender: senderId,
+            receiver: receiverId,
+            text: text || "",
+            photoUrl: photoUrl || null,
+        });
+
+        conversation.lastMessage = message._id;
+        await conversation.save();
+
+
+        emitSocketEvent(req, "sendMessage", {
             message,
             conversationId,
             senderId,
+            photoUrl: req.user.photoUrl,
             receiverId,
         });
 
@@ -104,9 +98,6 @@ module.exports.sendMessage = async (req, res) => {
     }
 };
 
-// ---------------------------------------------
-// Get All Messages of a Conversation
-// ---------------------------------------------
 module.exports.getMessages = async (req, res) => {
     try {
         const { conversationId } = req.params;
@@ -126,9 +117,7 @@ module.exports.getMessages = async (req, res) => {
     }
 };
 
-// ---------------------------------------------
-// Get Conversations List for Logged In User
-// ---------------------------------------------
+
 module.exports.getConversations = async (req, res) => {
     try {
         const userId = req.user._id;

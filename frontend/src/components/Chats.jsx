@@ -1,19 +1,24 @@
 import axios from "axios";
+import { Clock, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { setConversations } from "../store/chatSlice";
 import { baseUrl } from "../utils/constants";
-import { MessageSquare, Clock } from "lucide-react";
 
 const Chats = () => {
-  const [conversations, setConversations] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const user = useSelector((store) => store.user);
+  const conversations = useSelector((store) => store.chat?.conversations);
+  const newMessage = useSelector((store) => store.chat?.newMessage);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchConversations();
-  }, []);
+    if (conversations.length === 0) {
+      fetchConversations();
+    }
+  }, [conversations.length]);
 
   const fetchConversations = async () => {
     setLoading(true);
@@ -21,10 +26,9 @@ const Chats = () => {
       const res = await axios.get(baseUrl + "/api/chat/conversations", {
         withCredentials: true,
       });
-      setConversations(Array.isArray(res.data?.data) ? res.data.data : []);
+      dispatch(setConversations(res.data.data));
     } catch (error) {
       console.error("Error fetching chats", error);
-      setConversations([]);
     } finally {
       setLoading(false);
     }
@@ -110,12 +114,31 @@ const Chats = () => {
                   {lastMessageText}
                 </p>
               </div>
+              <div className="flex flex-col items-end text-right text-xs">
+                {/* Display last message time */}
+                <span className="text-base-content/60 font-medium mb-1">
+                  {lastMessageTime}
+                </span>
 
-              <div className="flex flex-col items-end text-right text-xs text-gray-400">
+                {/* Display Unread Count Badge */}
+                {/* Assuming unreadCount is calculated and is > 0 */}
                 {lastMessage && (
                   <>
-                    <Clock className="w-3 h-3 mb-1" />
-                    <span>{lastMessageTime}</span>
+                    {/* Find the number of unread messages for this conversation */}
+                    {Array.isArray(newMessage) &&
+                      newMessage.filter(
+                        (msg) => msg.conversationId === conv._id
+                      ).length > 0 && (
+                        // Use a DaisyUI badge for a modern unread indicator
+                        <div className="badge badge-primary badge-sm text-white font-semibold">
+                          {/* Display the count, or just 'New' if the count is not ready/needed */}
+                          {
+                            newMessage.filter(
+                              (msg) => msg.conversationId === conv._id
+                            ).length
+                          }
+                        </div>
+                      )}
                   </>
                 )}
               </div>

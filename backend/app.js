@@ -6,6 +6,8 @@ const config = require('config');
 const cors = require('cors');
 const cookieParser = require("cookie-parser");
 const flash = require('connect-flash');
+const dbgr = require("debug")("development:Server")
+
 
 const app = express();
 
@@ -16,7 +18,7 @@ app.use(flash());
 
 
 app.use(cors({
-    origin: "https://dev-t-inder.netlify.app/",
+    origin: "http://localhost:5173",
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
@@ -35,7 +37,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
     cors: {
-        origin: "https://dev-t-inder.netlify.app/",
+        origin: "http://localhost:5173",
         methods: ["GET", "POST"],
         credentials: true,
     },
@@ -48,32 +50,35 @@ app.use((req, res, next) => {
 });
 
 io.on("connection", (socket) => {
-    console.log("⚡ User connected:", socket.id);
+    dbgr("⚡ User connected:", socket.id);
 
     socket.on("joinUser", (userId) => {
         if (!userId) return;
         socket.join(userId);
-        console.log(`User ${socket.id} joined USER ROOM: ${userId}`);
+        dbgr(`User ${socket.id} joined USER ROOM: ${userId}`);
     });
+
 
     socket.on("joinConversation", (conversationId) => {
         socket.join(conversationId);
-        console.log(`User ${socket.id} joined CONVERSATION ROOM: ${conversationId}`);
+        dbgr(`User ${socket.id} joined CONVERSATION ROOM: ${conversationId}`);
     });
 
-    socket.on("sendMessage", ({ conversationId, receiverId, message }) => {
+    socket.on("sendMessage", ({ conversationId, sender, photoUrl, receiverId, message }) => {
         if (conversationId) {
             socket.to(conversationId).emit("receiveMessage", message);
         }
+
         if (receiverId) {
-            socket.to(receiverId).emit("newMessageNotification", message);
+            socket.to(receiverId).emit("newMessageNotification", { message, sender, photoUrl });
+            dbgr(`Emitted newMessageNotification to user ${receiverId}`);
         }
     });
 
     socket.on("disconnect", () => {
-        console.log("❌ User disconnected:", socket.id);
+        dbgr("❌ User disconnected:", socket.id);
     });
 });
 
 const port = config.get('PORT') || 5000;
-server.listen(port, () => console.log(`🚀 Server running at http://localhost:${port}`));
+server.listen(port, () => dbgr(`🚀 Server running at http://localhost:${port}`));

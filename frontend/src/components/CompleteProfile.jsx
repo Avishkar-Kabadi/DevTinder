@@ -79,6 +79,7 @@ const CompleteProfile = () => {
         <StepPhoto
           formData={formData}
           setFormData={setFormData}
+          loading={loading}
           back={() => setStep(2)}
           onSubmit={onSubmit}
         />

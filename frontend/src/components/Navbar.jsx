@@ -2,6 +2,7 @@ import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { baseUrl } from "../utils/constants";
+import { disconnectSocket } from "../utils/socket";
 
 const Navbar = () => {
   const dispatch = useDispatch();
@@ -11,6 +12,7 @@ const Navbar = () => {
     try {
       await axios.post(baseUrl + `/auth/logout`, {}, { withCredentials: true });
       dispatch({ type: "auth/logout" });
+      disconnectSocket();
     } catch (error) {
       console.log(error);
     }
