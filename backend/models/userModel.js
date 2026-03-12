@@ -12,6 +12,21 @@ const userSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+        
+        username: {
+            type: String,
+            required: true,
+            trim: true,
+            unique: true,
+            lowercase: true,
+        },
+
+        otp: String,
+
+        isVerified: {
+            type: Boolean,
+            default: false,
+        },
 
         email: {
             type: String,
@@ -32,29 +47,6 @@ const userSchema = new mongoose.Schema(
 
         age: Number,
 
-        skills: [String],
-
-        requests: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-            }
-        ],
-
-        connections: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-            }
-        ],
-
-        notInterested: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "User",
-            }
-        ],
-
         about: {
             type: String,
             trim: true,
@@ -65,6 +57,7 @@ const userSchema = new mongoose.Schema(
             default: false,
         }
     },
+    
     {
         timestamps: true,
     }

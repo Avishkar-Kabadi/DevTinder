@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken');
 
 const isLoggedIn = async (req, res, next) => {
     try {
-        const token = req.cookies?.token;
+        const token = req.cookies?.token
 
-        if (!token) {
+        if(!token) {
             return res.status(401).json({ message: "Unauthorized - Please Login" });
         }
 
@@ -15,7 +15,7 @@ const isLoggedIn = async (req, res, next) => {
             return res.status(401).json({ message: "Unauthorized - Blacklisted Token" });
         }
 
-        const decoded = jwt.verify(token, "shshhdjdj");
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || "devtinder_secret");
 
         if (!decoded || !decoded.userid) {
             return res.status(401).json({ message: "Unauthorized - Invalid Token" });

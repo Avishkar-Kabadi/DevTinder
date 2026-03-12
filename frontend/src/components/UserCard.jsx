@@ -1,82 +1,94 @@
 import axios from "axios";
 import { useDispatch } from "react-redux";
+import { useState } from "react";
 import { removeUserFeed } from "../store/feedSlice";
 import { baseUrl } from "../utils/constants";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 const UserCard = ({ user }) => {
   const dispatch = useDispatch();
+  const [loadingAction, setLoadingAction] = useState(null);
 
-  const cleanSkills =
-    user?.skills?.map((skill) => skill.replace(/^"|"$/g, "")) || [];
 
   const handleSubmit = async (status, id) => {
-    console.log("Button is clicked");
-
+    // Optimistically update UI
+    setLoadingAction(status);
+    
+    // We can dispatch remove right away or wait for the API
+    // Let's delay dispatch slightly so the user sees the button feedback
+    
     try {
-      const res = await axios.post(
+      await axios.post(
         baseUrl + `/api/${status}/${id}`,
         {},
         {
           withCredentials: true,
         }
       );
-      dispatch(removeUserFeed(id));
-      console.log(res.data.message);
+      
+      // Remove from feed after brief delay for UX
+      setTimeout(() => {
+         dispatch(removeUserFeed(id));
+      }, 400);
+
     } catch (error) {
       console.log(error.response?.data);
+      setLoadingAction(null); // Revert if failed
     }
   };
 
   return (
-    <div className="card z-auto bg-base-200 w-100 shadow-xl hover:shadow-2xl transition-all duration-300 rounded-xl border border-base-300">
-      <figure className="px-4 pt-4">
-        <img
-          className="h-96 w-full object-cover rounded-xl"
-          src={user?.photoUrl}
-          alt={user?.firstName}
-        />
-      </figure>
-
-      <div className="card-body space-y-1">
-        <h2 className="card-title text-xl font-bold">
-          {user?.firstName} {user?.lastName}
-        </h2>
-
-        <p className="text-base-content/70 text-lg">
-          {user?.age} {user?.gender}
-        </p>
-
-        <p className="text-base-content/80 text-xs">{user?.about}</p>
-
-        {cleanSkills.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-2">
-            {cleanSkills.map((skill, index) => (
-              <span
-                key={index}
-                className="badge badge-primary badge-outline px-3 py-2 text-sm"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <div className="card-actions justify-center mt-4">
-          <button
-            onClick={() => handleSubmit("mark-not-interested", user?._id)}
-            disabled={!user?._id}
-            className="btn btn-outline w-32 rounded-full"
-          >
-            Ignore
-          </button>
-          <button
-            disabled={!user?._id}
-            onClick={() => handleSubmit("send-request", user?._id)}
-            className="btn btn-primary w-32 rounded-full text-white"
-          >
-            Interested
-          </button>
+    <div className="bg-base-100 rounded-3xl p-5 shadow-sm border border-base-200 hover:shadow-md transition-all flex flex-col h-full group">
+      <div className="flex items-center gap-4 mb-4">
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-base-200 shrink-0 group-hover:border-primary/50 transition-colors">
+            <img 
+                src={user?.photoUrl || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} 
+                alt={user?.firstName}
+                className="w-full h-full object-cover"
+            />
         </div>
+        <div className="flex flex-col min-w-0 flex-1">
+            <h2 className="text-lg font-bold truncate group-hover:text-primary transition-colors">
+                {user?.firstName} {user?.lastName}
+            </h2>
+            <p className="text-sm text-base-content/60 truncate">
+               {user?.age ? `${user.age} • ` : ''} {user?.gender || 'Not specified'}
+            </p>
+        </div>
+      </div>
+      
+      <p className="text-sm text-base-content/80 line-clamp-3 mb-4 flex-1">
+          {user?.about || "No bio provided."}
+      </p>
+
+
+      <div className="mt-auto border-t border-base-200 pt-4 flex gap-3">
+        <button
+          onClick={() => handleSubmit("mark-not-interested", user?._id)}
+          disabled={loadingAction !== null}
+          className={`btn flex-1 rounded-xl transition-all ${
+              loadingAction === "mark-not-interested" 
+              ? "btn-error bg-error/10 text-error border-none" 
+              : "btn-ghost btn-outline border-base-300 hover:bg-error/10 hover:text-error hover:border-error/30"
+          }`}
+        >
+            {loadingAction === "mark-not-interested" ? (
+                <><XCircle className="w-4 h-4" /> Ignored</>
+            ) : "Ignore"}
+        </button>
+        <button
+          onClick={() => handleSubmit("send-request", user?._id)}
+          disabled={loadingAction !== null}
+          className={`btn flex-1 rounded-xl transition-all ${
+            loadingAction === "send-request" 
+            ? "btn-success bg-success/10 text-success border-none" 
+            : "btn-primary"
+          }`}
+        >
+             {loadingAction === "send-request" ? (
+                <><CheckCircle2 className="w-4 h-4" /> Sent</>
+            ) : "Connect"}
+        </button>
       </div>
     </div>
   );
