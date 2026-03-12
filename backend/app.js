@@ -24,7 +24,7 @@ const apiLimiter = rateLimit({
 
 app.use(cors({
     // origin: "http://localhost:5173"
-    origin:"https://dev-tinder-plum-one.vercel.app/",
+    origin:"https://dev-tinder-plum-one.vercel.app",
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
@@ -63,7 +63,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         // origin: "http://localhost:5173",
-        origin:"https://dev-tinder-plum-one.vercel.app/",
+        origin:"https://dev-tinder-plum-one.vercel.app",
         methods: ["GET", "POST"],
         credentials: true,
     },
