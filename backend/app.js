@@ -23,13 +23,12 @@ const apiLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-
-app.use(cors({
-    // origin: "http://localhost:5173"
+let corsOptions = {
     origin: "https://dev-tinder-plum-one.vercel.app",
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-}));
+}
+app.use(cors(corsOptions));
 
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" }
@@ -64,7 +63,7 @@ app.use("/auth/", apiLimiter);
 
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors:corsOptions,
+    cors: corsOptions,
     transports: ["websocket", "polling"],
 });
 
