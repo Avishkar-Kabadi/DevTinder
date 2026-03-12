@@ -108,5 +108,5 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => dbgr("❌ User disconnected"));
 });
 
-const port = process.env.BREVO_API_KEY || config.get('PORT') || 5000
+const port = process.env.PORT || config.get('PORT') || 5000
 server.listen(port, () => dbgr(`🚀 Server running at http://localhost:${port}`));
