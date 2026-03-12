@@ -10,16 +10,15 @@ dbgr(key)
 
 const sendEmail = async (to, subject, content) => {
     try {
-        // Initialize the new Unified Client
         const client = new BrevoClient({
-            apiKey: config.get('BREVO_API_KEY') || process.env.BREVO_API_KEY,
+            apiKey: process.env.BREVO_API_KEY || config.get('BREVO_API_KEY'),
         });
 
 
         const result = await client.transactionalEmails.sendTransacEmail({
             sender: {
                 name: 'DevTinder',
-                email: 'razergaming1828@gmail.com' // Must be your verified sender
+                email: 'razergaming1828@gmail.com'
             },
             to: [{ email: to }],
             subject: subject,

@@ -49,11 +49,17 @@ module.exports.registerUser = async (req, res) => {
             return res.status(400).json({ message: "All fields are required!" });
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+
         const existingUser = await userModel.findOne({
             $or: [{ email }, { username }]
         });
-        if (existingUser) {
-            return res.status(409).json({ message: "Email or Username already exists" });
+
+        if (existingUser && existingUser.isVerified) {
+            return res.status(409).json({ message: "Account already exists and is verified." });
         }
 
         const otp = otpGenerator.generate(6, {
@@ -65,13 +71,29 @@ module.exports.registerUser = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
 
+        try {
+            await sendEmail(email, "Your Verification Code", `Your OTP is: ${otp}`);
+        } catch (mailError) {
+            dbgr("Email Service Error:", mailError);
+            return res.status(503).json({
+                message: "Email service is temporarily unavailable. Please try again later."
+            });
+        }
+
+
         await userModel.findOneAndUpdate(
             { email },
-            { firstName, lastName, username, email, password: hashedPassword, otp, isVerified: false },
+            {
+                firstName,
+                lastName,
+                username,
+                email,
+                password: hashedPassword,
+                otp,
+                isVerified: false
+            },
             { upsert: true, new: true }
         );
-
-        await sendEmail(email, "Your Verification Code", `Your OTP is: ${otp}`);
 
         return res.status(200).json({ message: "OTP sent to email. Please verify." });
 
@@ -143,15 +165,22 @@ module.exports.loginUser = async (req, res) => {
 
         const { password: pwd, ...userWithoutPassword } = userObj;
 
-        const isProduction = process.env.NODE_ENV === "production";
-
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true, // MUST be true for cross-site cookies
-            sameSite: "none", // MUST be "none" if FE and BE are on different domains
+            secure: false,
+            sameSite: "lax",
             maxAge: 24 * 60 * 60 * 1000,
             path: "/",
         });
+
+        //  res.cookie("token", token, {
+        //     httpOnly: true,
+        //     secure: true, // MUST be true for cross-site cookies
+        //     sameSite: "none", // MUST be "none" if FE and BE are on different domains
+        //     maxAge: 24 * 60 * 60 * 1000,
+        //     path: "/",
+        // });
+
 
 
 
@@ -163,7 +192,7 @@ module.exports.loginUser = async (req, res) => {
 
 
     } catch (error) {
-        dbgr("Register Error:", error);
+        dbgr("Login Error:", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 }
