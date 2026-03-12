@@ -143,10 +143,12 @@ module.exports.loginUser = async (req, res) => {
 
         const { password: pwd, ...userWithoutPassword } = userObj;
 
+        const isProduction = process.env.NODE_ENV === "production";
+
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: true, // MUST be true for cross-site cookies
+            sameSite: "none", // MUST be "none" if FE and BE are on different domains
             maxAge: 24 * 60 * 60 * 1000,
             path: "/",
         });
