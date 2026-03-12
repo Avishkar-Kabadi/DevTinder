@@ -2,8 +2,9 @@
 const { BrevoClient } = require('@getbrevo/brevo');
 const dbgr = require("debug")("development:Auth")
 const config = require('config');
+require('dotenv').config();
 
-const key = config.get('BREVO_API_KEY')
+const key = process.env.BREVO_API_KEY || config.get('BREVO_API_KEY')
 dbgr(key)
 
 
