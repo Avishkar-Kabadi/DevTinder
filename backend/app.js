@@ -13,8 +13,10 @@ require('dotenv').config();
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
+    windowMs: 15 * 60 * 1000,
     max: 200,
     message: 'Too many requests from this IP, please try again after 15 minutes',
     standardHeaders: true,
@@ -24,7 +26,7 @@ const apiLimiter = rateLimit({
 
 app.use(cors({
     // origin: "http://localhost:5173"
-    origin:"https://dev-tinder-plum-one.vercel.app",
+    origin: "https://dev-tinder-plum-one.vercel.app",
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
@@ -41,18 +43,19 @@ app.use(flash());
 
 app.use((req, res, next) => {
     const sanitize = (obj) => {
-        if (obj instanceof Object) {
-            for (let key in obj) {
+        if (obj && typeof obj === 'object') {
+            Object.keys(obj).forEach(key => {
                 if (key.startsWith('$') || key.includes('.')) {
                     delete obj[key];
                 } else {
                     sanitize(obj[key]);
                 }
-            }
+            });
         }
     };
     sanitize(req.body);
     sanitize(req.params);
+    sanitize(req.query);
     next();
 });
 
@@ -61,12 +64,7 @@ app.use("/auth/", apiLimiter);
 
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        // origin: "http://localhost:5173",
-        origin:"https://dev-tinder-plum-one.vercel.app",
-        methods: ["GET", "POST"],
-        credentials: true,
-    },
+    cors:corsOptions,
     transports: ["websocket", "polling"],
 });
 
