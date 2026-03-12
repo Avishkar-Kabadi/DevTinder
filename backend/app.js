@@ -9,6 +9,7 @@ const flash = require('connect-flash');
 const dbgr = require("debug")("development:Server");
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+require('dotenv').config();
 
 const app = express();
 
@@ -105,5 +106,5 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => dbgr("❌ User disconnected"));
 });
 
-const port = config.get('PORT') || 5000;
+const port = process.env.BREVO_API_KEY || config.get('PORT') || 5000
 server.listen(port, () => dbgr(`🚀 Server running at http://localhost:${port}`));
