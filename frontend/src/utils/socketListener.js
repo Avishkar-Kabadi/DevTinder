@@ -1,7 +1,7 @@
 import appStore from "../store/appStore";
 import {
     setLastMessage,
-    setNewMessage,
+    setNewMessage,setNotifications
 } from "../store/chatSlice";
 import { addNotification } from "../store/notificationSlice";
 import { socket } from "./socket";
@@ -13,9 +13,11 @@ const initGlobalSocketListeners = () => {
     initialized = true;
 
 
+
     const handleNotification = (message) => {
         appStore.dispatch(setLastMessage({ message: message.message }));
         appStore.dispatch(setNewMessage({ message: message.message }));
+        appStore.dispatch(setNotifications(message))
     };
 
     const handleSystemNotification = (notif) => {

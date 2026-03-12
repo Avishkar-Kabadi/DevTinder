@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeNotifications } from "../store/chatSlice";
@@ -6,84 +6,82 @@ import { decodeMessage } from "../utils/messageEncoder";
 
 const Notification = () => {
   const dispatch = useDispatch();
-  // ⚠️ CRITICAL REDUX FIX: Use 'notification' (singular) as defined in chatSlice
   const notification = useSelector((store) => store.chat?.notifications);
   const [isVisible, setIsVisible] = useState(false);
 
-  // --- 1. Show/Hide Logic ---
   useEffect(() => {
     if (notification) {
-      // Show the notification when data arrives
-      setIsVisible(true);
-
-      // 2. Auto-Dismiss after 5 seconds
-      const timer = setTimeout(() => {
-        handleDismiss();
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    } else {
-      setIsVisible(false);
+      const timer = setTimeout(() => setIsVisible(true), 10);
+      const autoHide = setTimeout(() => handleDismiss(), 5000);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(autoHide);
+      };
     }
   }, [notification]);
 
-  if (!notification && !isVisible) return null;
-
-  const message = notification?.message || {};
-  const sender = notification?.sender || {};
-
-  // Function to handle manual or automatic dismissal
   const handleDismiss = () => {
     setIsVisible(false);
-    // Delay clearing Redux state until the animation finishes
     setTimeout(() => {
       dispatch(removeNotifications());
-    }, 300); // Match this timeout to your CSS animation duration
+    }, 400);
   };
+
+  if (!notification) return null;
+
+  // FIX: Extract strings from objects to prevent "Objects are not valid as a React child"
+  // If sender is an object, get the name property. If it's a string, use it directly.
+  const displaySender = typeof notification.sender === 'object'
+    ? (notification.sender.firstName || notification.sender.name || "User")
+    : notification.sender;
+
+  // If message is the object from your error log, it contains 'text'
+  const displayMessage = typeof notification.message === 'object'
+    ? notification.message.text
+    : (notification.text || notification.message);
 
   return (
     <div
-      className={`fixed top-5 right-5 z-50 w-80 md:w-96 p-4 glass-panel glow-border rounded-2xl transition-all duration-300 ease-out shadow-[0_0_30px_rgba(0,0,0,0.5)] 
-                ${
-                  isVisible
-                    ? "translate-x-0 opacity-100"
-                    : "translate-x-full opacity-0"
-                }
-                border-l-[3px] border-l-cyan-400`}
+      className={`fixed top-0 left-0 right-0 z-[100] flex justify-center p-4 pointer-events-none transition-all duration-500 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
+        ${isVisible ? "translate-y-4 opacity-100" : "-translate-y-full opacity-0"}
+      `}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          {/* Avatar */}
-          <img
-            src={notification.photoUrl || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
-            alt={sender || "User"}
-            className="h-12 w-12 rounded-full object-cover border border-white/10"
-          />
+      <div className="pointer-events-auto w-full max-w-md overflow-hidden relative group">
+        <div className="bg-[#111111]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.6)] p-4 flex items-center gap-4">
 
-          {/* Sender Info */}
-          <div className="flex flex-col min-w-0 flex-1">
-            <p className="font-bold text-gray-100 truncate text-base">
-              {sender || "New User"}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-70" />
+
+          <div className="relative shrink-0">
+            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-cyan-500/30">
+              <img
+                src={notification.photoUrl || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
+                alt="Sender"
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-cyan-500 text-black p-1 rounded-full animate-pulse">
+              <Bell className="w-2.5 h-2.5" />
+            </div>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-start">
+              <h3 className="font-bold text-gray-100 truncate pr-2">
+                {/* SAFE STRING RENDERING */}
+                {displaySender || "New Message"}
+              </h3>
+              <button onClick={handleDismiss} className="text-gray-500 hover:text-white transition-colors p-1">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-gray-400 text-sm line-clamp-1 italic">
+              {/* SAFE STRING RENDERING */}
+              {displayMessage ? decodeMessage(displayMessage) : "Sent a message..."}
             </p>
-            <span className="text-cyan-400/90 text-[13px] font-medium tracking-wide">
-              New Message
-            </span>
           </div>
         </div>
 
-        {/* Dismiss Button */}
-        <button
-          onClick={handleDismiss}
-          className="p-1.5 text-gray-500 hover:text-white hover:bg-white/10 transition-colors duration-150 rounded-full ml-4 shrink-0 -mt-1 -mr-1"
-          aria-label="Dismiss notification"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Message Content */}
-      <div className="mt-3 pl-[64px] text-gray-400 text-sm overflow-hidden whitespace-nowrap overflow-ellipsis">
-        {message.text ? decodeMessage(message.text) : "Sent a new message."}
+        <div className="absolute bottom-0 left-0 h-[3px] bg-cyan-500/50 animate-shrink-width" style={{ width: '100%' }} />
       </div>
     </div>
   );
