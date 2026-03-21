@@ -7,6 +7,8 @@ const chatSlice = createSlice({
         newMessage: [],
         activeConversationId: null,
         notifications: null,
+        onlineUsers: [],
+        callHistory: [],
     },
     reducers: {
 
@@ -63,25 +65,31 @@ const chatSlice = createSlice({
         },
         removeActiveConversationId: (state) => {
             state.activeConversationId = null;
-        }
-
+        },
+        setOnlineUsers: (state, action) => {
+            state.onlineUsers = action.payload;
+        },
+        setCallHistory: (state, action) => {
+            state.callHistory = action.payload;
+        },
+        addCallHistory: (state, action) => {
+            state.callHistory.unshift(action.payload);
+        },
     },
 });
 
 export const {
-
-
-
     setActiveConversationId,
     removeActiveConversationId,
-
     setNotifications,
     removeNotifications,
-
     setConversations,
     setLastMessage,
     setNewMessage,
     clearNewMessage,
+    setOnlineUsers,
+    setCallHistory,
+    addCallHistory,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

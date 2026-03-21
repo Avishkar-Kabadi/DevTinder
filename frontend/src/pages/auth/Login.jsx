@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { addUser } from "../../store/userSlice";
 import { baseUrl } from "../../utils/constants";
-// Removed Globe import as it's no longer used
 import Icon from "../../assets/Icon.png";
 
 const Login = () => {
@@ -45,7 +44,6 @@ const Login = () => {
   return (
     <div className="flex justify-center items-center min-h-screen bg-base-200/50 px-4 py-8 relative overflow-hidden">
 
-      {/* Decorative background blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-secondary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-[-20%] left-[20%] w-96 h-96 bg-accent/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
@@ -54,7 +52,6 @@ const Login = () => {
         <div className="card-body p-8 sm:p-10">
 
           <div className="flex flex-col items-center mb-6">
-            {/* Replaced Globe with Icon Image */}
             <div className="bg-primary/5 p-2 rounded-full mb-4 w-20 h-20 flex items-center justify-center overflow-hidden">
               <img
                 src={Icon}

@@ -45,6 +45,16 @@ const UserPostsDetail = () => {
         }
     };
 
+    const handleDeletePost = (deletedId) => {
+        const remaining = posts.filter(p => p._id !== deletedId);
+        isSef ? dispatch(setUserPosts(remaining)) : dispatch(setProfilePosts(remaining));
+    };
+
+    const handleUpdatePost = (updatedPost) => {
+        const updated = posts.map(p => p._id === updatedPost._id ? updatedPost : p);
+        isSef ? dispatch(setUserPosts(updated)) : dispatch(setProfilePosts(updated));
+    };
+
     useEffect(() => {
         if (!posts || posts.length === 0) {
             fetchPosts();
@@ -90,7 +100,12 @@ const UserPostsDetail = () => {
                             ref={(el) => (postRefs.current[post._id] = el)}
                             className={`transition-all duration-1000 ${post._id === postId ? 'ring-2 ring-cyan-500/50 rounded-3xl' : ''}`}
                         >
-                            <Post post={post} />
+                            <Post 
+                                post={post} 
+                                isProfilePage={true} 
+                                onDelete={handleDeletePost} 
+                                onUpdate={handleUpdatePost} 
+                            />
                         </div>
                     ))
                 ) : !loading && (

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { baseUrl } from '../utils/constants';
 import { updatePost } from '../store/feedSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { ThumbsUp, MessageSquare, Share2, Bookmark, MoreVertical, X } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Share2, Bookmark, MoreVertical, X, Edit2, Trash2 } from 'lucide-react';
 import Comments from './Comments';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,13 +19,35 @@ const timeAgo = (date) => {
     return `${Math.floor(diffInSeconds / 86400)}d`;
 };
 
-export default function Post({ post }) {
+export default function Post({ post, isProfilePage = false, onDelete, onUpdate }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [showComments, setShowComments] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editCaption, setEditCaption] = useState(post?.caption || '');
     const currentUser = useSelector((store) => store.user);
 
     const isLiked = post.likes?.includes(currentUser?._id);
+
+    const handleDelete = async () => {
+        if (!window.confirm("Are you sure you want to delete this post?")) return;
+        try {
+            await axios.delete(`${baseUrl}/api/posts/post/${post._id}`, { withCredentials: true });
+            if (onDelete) onDelete(post._id);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleEditSubmit = async () => {
+        try {
+            const res = await axios.put(`${baseUrl}/api/posts/post/${post._id}`, { caption: editCaption }, { withCredentials: true });
+            setIsEditing(false);
+            if (onUpdate) onUpdate(res.data.post || { ...post, caption: editCaption });
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const handleLikeDislike = async () => {
         // Optimistic Like UI approach
@@ -82,17 +104,42 @@ export default function Post({ post }) {
                         </div>
                     </div>
                 </div>
-                <button className="btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-100 hover:bg-white/5">
-                    <MoreVertical className="w-5 h-5" />
-                </button>
+                {isProfilePage && currentUser?._id === post.owner?._id ? (
+                    <div className="dropdown dropdown-end">
+                        <label tabIndex={0} className="btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-100 hover:bg-white/5">
+                            <MoreVertical className="w-5 h-5" />
+                        </label>
+                        <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-[#111111] border border-white/10 rounded-xl w-44 mt-1">
+                            <li><button onClick={() => setIsEditing(true)}><Edit2 className="w-4 h-4"/> Edit Caption</button></li>
+                            <li><button onClick={handleDelete} className="text-red-400 hover:bg-red-500/10 hover:text-red-300"><Trash2 className="w-4 h-4"/> Delete Post</button></li>
+                        </ul>
+                    </div>
+                ) : (
+                    <button className="btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-100 hover:bg-white/5">
+                        <MoreVertical className="w-5 h-5" />
+                    </button>
+                )}
             </header>
 
             {/* Caption */}
-            {post.caption && (
+            {isEditing ? (
+                <div className="px-5 pb-3">
+                    <textarea 
+                        className="textarea textarea-bordered w-full bg-base-200/50 focus:outline-none focus:border-cyan-500" 
+                        value={editCaption} 
+                        onChange={(e) => setEditCaption(e.target.value)}
+                        rows="3"
+                    />
+                    <div className="flex gap-2 justify-end mt-2">
+                        <button onClick={() => setIsEditing(false)} className="btn btn-sm btn-ghost rounded-lg">Cancel</button>
+                        <button onClick={handleEditSubmit} className="btn btn-sm btn-primary rounded-lg">Save</button>
+                    </div>
+                </div>
+            ) : post.caption ? (
                 <div className="px-5 pb-3 text-gray-300 whitespace-pre-wrap text-[15px] leading-relaxed">
                     {post.caption}
                 </div>
-            )}
+            ) : null}
 
             {/* Media Item */}
             {post.image && (

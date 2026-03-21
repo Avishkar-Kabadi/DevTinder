@@ -23,8 +23,12 @@ const apiLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+
+let CLIENT_URL = process.env.CLIENT_URL
+
 let corsOptions = {
-    origin: "https://dev-tinder-plum-one.vercel.app",
+    // origin: "https://dev-tinder-plum-one.vercel.app",
+    origin:CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }
@@ -90,19 +94,63 @@ app.use("/api/notifications", notificationRoutes);
 
 app.get('/', (req, res) => res.send("API is active."));
 
+const onlineUsersMap = new Map();
+
 io.on("connection", (socket) => {
     dbgr("⚡ User connected:", socket.id);
-    socket.on("joinUser", (userId) => {
-        if (userId) socket.join(userId);
+    
+    socket.on("getOnlineUsers", () => {
+        socket.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
     });
+    
+    socket.on("joinUser", (userId) => {
+        if (userId) {
+            socket.join(userId);
+            onlineUsersMap.set(userId, socket.id);
+            io.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
+        }
+    });
+
     socket.on("joinConversation", (id) => {
         if (id) socket.join(id);
     });
+
     socket.on("sendMessage", ({ conversationId, sender, photoUrl, receiverId, message }) => {
         if (conversationId) socket.to(conversationId).emit("receiveMessage", message);
         if (receiverId) socket.to(receiverId).emit("newMessageNotification", { message, sender, photoUrl });
     });
-    socket.on("disconnect", () => dbgr("❌ User disconnected"));
+
+    // WebRTC Signaling Relay Events
+    socket.on("callUser", ({ userToCall, signalData, from, name, photoUrl, isVideo }) => {
+        socket.to(userToCall).emit("incomingCall", { signal: signalData, from, name, photoUrl, isVideo });
+    });
+
+    socket.on("answerCall", (data) => {
+        socket.to(data.to).emit("callAccepted", data.signal);
+    });
+
+    socket.on("iceCandidate", (data) => {
+        socket.to(data.to).emit("iceCandidate", data.candidate);
+    });
+
+    socket.on("endCall", (data) => {
+        socket.to(data.to).emit("callEnded");
+    });
+
+    socket.on("disconnect", () => {
+        dbgr("❌ User disconnected");
+        let disconnectedUserId = null;
+        for (let [userId, sockId] of onlineUsersMap.entries()) {
+            if (sockId === socket.id) {
+                disconnectedUserId = userId;
+                break;
+            }
+        }
+        if (disconnectedUserId) {
+            onlineUsersMap.delete(disconnectedUserId);
+            io.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
+        }
+    });
 });
 
 const port = process.env.PORT || config.get('PORT') || 5000

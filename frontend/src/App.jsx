@@ -5,29 +5,33 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { WifiOff, RefreshCw } from 'lucide-react';
 
-import Body from "./pages/Body";
+import { Suspense, lazy } from 'react';
+
+const Body = lazy(() => import("./pages/Body"));
 
 // Auth pages (public / no login required)
-import Login from "./pages/auth/Login";
-import SignUp from "./pages/auth/SignUp";
-import CompleteProfile from "./pages/auth/CompleteProfile";
+const Login = lazy(() => import("./pages/auth/Login"));
+const SignUp = lazy(() => import("./pages/auth/SignUp"));
+const CompleteProfile = lazy(() => import("./pages/auth/CompleteProfile"));
 
 // Global app pages (visible to all logged-in users)
-import Feed from "./pages/Feed";
-import Chats from "./pages/Chats";
-import Message from "./pages/Message";
-import Search from "./pages/Search";
-import UserProfile from "./pages/UserProfile";
-
+const Feed = lazy(() => import("./pages/Feed"));
+const Chats = lazy(() => import("./pages/Chats"));
+const CallHistory = lazy(() => import("./pages/CallHistory"));
+const Message = lazy(() => import("./pages/Message"));
+const Search = lazy(() => import("./pages/Search"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
 
 // Profile pages (show current user's own data)
-import Connections from "./pages/profile/Connections";
-import Requests from "./pages/profile/Requests";
-import Notifications from "./pages/profile/Notifications";
-import EditProfile from "./pages/profile/EditProfile";
-import CreatePost from "./pages/profile/CreatePost";
-import UserPostsDetail from "./pages/profile/UserPostsDetail";
+const Connections = lazy(() => import("./pages/profile/Connections"));
+const Requests = lazy(() => import("./pages/profile/Requests"));
+const Notifications = lazy(() => import("./pages/profile/Notifications"));
+const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
+const CreatePost = lazy(() => import("./pages/profile/CreatePost"));
+const UserPostsDetail = lazy(() => import("./pages/profile/UserPostsDetail"));
 
+
+import CallComponent from "./components/CallComponent";
 
 import { addUser } from "./store/userSlice";
 import { baseUrl } from "./utils/constants";
@@ -66,6 +70,12 @@ function App() {
         });
 
         initGlobalSocketListeners();
+
+        // Native Notification Requests
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
       } catch (error) {
         console.log("User not authenticated, socket not connected");
       } finally {
@@ -123,42 +133,52 @@ function App() {
   }
 
   return (
-    <BrowserRouter basename="/">
-      <Routes>
-        {/* Public */}
-        <Route
-          path="login"
-          element={!user ? <Login /> : <Navigate to="/" replace />}
-        />
-        <Route
-          path="signup"
-          element={
-            !user ? <SignUp /> : <Navigate to="/complete-profile" replace />
-          }
-        />
+    <>
+      <CallComponent />
+      <BrowserRouter basename="/">
+        <Suspense fallback={
+        <div className="flex items-center justify-center h-screen bg-base-100">
+          <span className="loading loading-spinner text-primary loading-lg"></span>
+        </div>
+      }>
+        <Routes>
+          {/* Public */}
+          <Route
+            path="login"
+            element={!user ? <Login /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="signup"
+            element={
+              !user ? <SignUp /> : <Navigate to="/complete-profile" replace />
+            }
+          />
 
-        {/* Protected */}
-        <Route
-          path="/"
-          element={user ? <Body /> : <Navigate to="/login" replace />}
-        >
-          <Route index element={<Feed />} />
-          {user?.isProfileCompleted ? null : (
-            <Route path="complete-profile" element={<CompleteProfile />} />
-          )}
-          <Route path="edit-profile" element={<EditProfile />} />
-          <Route path="requests" element={<Requests />} />
-          <Route path="connections" element={<Connections />} />
-          <Route path="notifications" element={<Notifications />} />
-          <Route path="chats" element={<Chats />} />
-          <Route path="chat/:conversationId" element={<Message />} />
-          <Route path="create-post" element={<CreatePost />} />
-          <Route path="posts/:userId/:postId" element={<UserPostsDetail />} />
-          <Route path="search" element={<Search />} />
-          <Route path="profile/:id" element={<UserProfile />} />
-        </Route>
-      </Routes>
+          {/* Protected */}
+          <Route
+            path="/"
+            element={user ? <Body /> : <Navigate to="/login" replace />}
+          >
+            <Route index element={<Feed />} />
+            {user?.isProfileCompleted ? null : (
+              <Route path="complete-profile" element={<CompleteProfile />} />
+            )}
+            <Route path="edit-profile" element={<EditProfile />} />
+            <Route path="requests" element={<Requests />} />
+            <Route path="connections" element={<Connections />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="chats" element={<Chats />} />
+            <Route path="calls" element={<CallHistory />} />
+            <Route path="chat/:conversationId" element={<Message />} />
+            <Route path="create-post" element={<CreatePost />} />
+            <Route path="posts/:userId/:postId" element={<UserPostsDetail />} />
+            <Route path="search" element={<Search />} />
+            <Route path="profile/:id" element={<UserProfile />} />
+          </Route>
+        </Routes>
+      </Suspense>
     </BrowserRouter>
+    </>
   );
 }
 

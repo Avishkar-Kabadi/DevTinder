@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Send, ArrowLeft, Phone, Video, Info, RefreshCw } from "lucide-react";
+import { Send, ArrowLeft, Phone, Video, Info, RefreshCw, ArrowDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -31,6 +31,9 @@ const Message = () => {
     return msg?.sender?._id || msg?.sender;
   };
 
+  const [otherUserId, setOtherUserId] = useState(location.state?.OtherUserId || null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [showScrollDown, setShowScrollDown] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchMessages = async (isRefetch = false) => {
@@ -46,12 +49,29 @@ const Message = () => {
       const rawMsgs = Array.isArray(res.data?.data) ? res.data.data : [];
       const decodedMsgs = rawMsgs.map(msg => ({ ...msg, text: decodeMessage(msg.text) }));
       setMessages(decodedMsgs);
+
+      if (!otherUserId) {
+        const remoteMsg = decodedMsgs.find(m => getSenderId(m) !== currentUserId);
+        if(remoteMsg) setOtherUserId(getSenderId(remoteMsg));
+      }
     } catch (error) {
       console.error("Error fetching messages:", error);
     } finally {
       setIsRefreshing(false);
       setLoading(false);
     }
+  };
+
+  const startCall = (isVideo) => {
+      if (!otherUserId) return;
+      window.dispatchEvent(new CustomEvent('startCall', {
+          detail: {
+              userToCall: otherUserId,
+              isVideo,
+              name: `${OtherUserfirstName} ${OtherUserlastName}`,
+              photo: OtherUserphotoUrl
+          }
+      }));
   };
 
   const sendMessage = async () => {
@@ -103,10 +123,23 @@ const Message = () => {
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
-      requestAnimationFrame(() => {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-      });
+        scrollRef.current.scrollTo({
+            top: scrollRef.current.scrollHeight,
+            behavior: "smooth"
+        });
+        setShowScrollDown(false);
     }
+  };
+
+  const handleScroll = () => {
+      if(scrollRef.current) {
+          const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+          if (scrollHeight - scrollTop - clientHeight > 150) {
+              setShowScrollDown(true);
+          } else {
+              setShowScrollDown(false);
+          }
+      }
   };
 
   useEffect(() => {
@@ -119,15 +152,24 @@ const Message = () => {
     const handleReceiveMessage = (msg) => {
       const senderId = getSenderId(msg);
 
+      if (!otherUserId && senderId !== currentUserId) {
+          setOtherUserId(senderId);
+      }
+
       if (senderId !== currentUserId) {
         setMessages((prev) => [...prev, { ...msg, text: decodeMessage(msg.text) }]);
       }
     };
 
+    const handleOnlineUsers = (users) => setOnlineUsers(users);
+
+    socket.emit("getOnlineUsers");
     socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("onlineUsers", handleOnlineUsers);
 
     return () => {
       socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("onlineUsers", handleOnlineUsers);
       dispatch(removeActiveConversationId());
     };
   }, [conversationId, currentUserId]);
@@ -166,8 +208,8 @@ const Message = () => {
               <span className="font-bold text-base sm:text-lg hover:underline cursor-pointer">
                 {OtherUserfirstName} {OtherUserlastName}
               </span>
-              <span className="text-xs text-base-content/60 flex items-center gap-1">
-                {loading ? "Connecting..." : "Online"}
+              <span className={`text-xs flex items-center gap-1 ${onlineUsers.includes(otherUserId) ? 'text-green-500 font-semibold' : 'text-base-content/60'}`}>
+                {loading ? "Connecting..." : onlineUsers.includes(otherUserId) ? "Online" : "Offline"}
               </span>
             </div>
           </div>
@@ -181,10 +223,10 @@ const Message = () => {
               >
                   <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
-              <button className="btn btn-ghost btn-circle btn-sm hover:text-primary transition-colors">
+              <button onClick={() => startCall(false)} className="btn btn-ghost btn-circle btn-sm hover:text-primary transition-colors">
                   <Phone className="w-5 h-5" />
               </button>
-              <button className="btn btn-ghost btn-circle btn-sm hover:text-primary transition-colors">
+              <button onClick={() => startCall(true)} className="btn btn-ghost btn-circle btn-sm hover:text-primary transition-colors">
                   <Video className="w-5 h-5" />
               </button>
               <button className="btn btn-ghost btn-circle btn-sm hidden sm:flex hover:text-primary transition-colors">
@@ -194,10 +236,12 @@ const Message = () => {
         </div>
 
         {/* Chat Messages */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed"
-        >
+        <div className="relative flex-1 overflow-hidden flex flex-col">
+            <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed relative"
+            >
           {loading && messages.length === 0 && (
             <div className="flex justify-center items-center h-full">
               <span className="loading loading-spinner text-primary loading-lg"></span>
@@ -247,6 +291,17 @@ const Message = () => {
               </div>
             );
           })}
+        </div>
+        
+        {/* Floating Scroll Down Button */}
+        {showScrollDown && (
+            <button 
+                onClick={scrollToBottom}
+                className="absolute bottom-[80px] sm:bottom-[90px] right-6 z-50 btn btn-circle btn-primary btn-sm sm:btn-md shadow-xl animate-bounce border-2 border-base-100"
+            >
+                <ArrowDown className="w-4 h-4 sm:w-5 sm:h-5 text-base-100" />
+            </button>
+        )}
         </div>
 
         {/* Message Input Container */}

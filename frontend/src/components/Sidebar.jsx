@@ -1,4 +1,4 @@
-import { Home, Users, UserPlus, MessageCircle, User, LogOut, Search, PlusCircle, Settings, Bell } from "lucide-react";
+import { Home, Users, UserPlus, MessageCircle, User, LogOut, Search, PlusCircle, Settings, Bell, Phone } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
@@ -16,6 +16,11 @@ const Sidebar = () => {
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const isActive = (path) => location.pathname === path;
+
+  const closeSidebar = () => {
+    const drawer = document.getElementById("mobile-sidebar-drawer");
+    if (drawer) drawer.checked = false;
+  };
 
   const handleLogout = async () => {
     try {
@@ -35,14 +40,13 @@ const Sidebar = () => {
     { name: "Create Post", path: "/create-post", icon: PlusCircle },
     { name: "Connections", path: "/connections", icon: Users },
     { name: "Requests", path: "/requests", icon: UserPlus },
-    
+    { name: "Calls", path: "/calls", icon: Phone },
   ];
 
   return (
     <div className="flex flex-col w-[260px] min-h-screen h-full border-r border-white/5 bg-[#0a0a0a] p-4 shrink-0 overflow-y-auto custom-scrollbar">
 
-      {/* Brand Logo Integration */}
-      <Link to="/" className="flex items-center px-4 py-8 mb-4 hover:opacity-80 transition-opacity">
+      <Link to="/" onClick={closeSidebar} className="flex items-center px-4 py-8 mb-4 hover:opacity-80 transition-opacity">
         <img
           src={Logo}
           alt="Loom Logo"
@@ -50,12 +54,12 @@ const Sidebar = () => {
         />
       </Link>
 
-      {/* Navigation */}
       <nav className="flex-1 flex flex-col gap-1">
         {navItems.map((item) => (
           <label key={item.name} htmlFor="mobile-sidebar-drawer" className="cursor-pointer">
             <Link
               to={item.path}
+              onClick={closeSidebar}
               className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium relative group ${isActive(item.path) || (item.name === "Messages" && location.pathname.startsWith("/chat/"))
                 ? "bg-cyan-500/10 text-cyan-400 font-semibold"
                 : "text-gray-400 hover:bg-white/5 hover:text-gray-100"
@@ -86,9 +90,8 @@ const Sidebar = () => {
         </div> */}
       </nav>
 
-      {/* User Info & Logout */}
       <div className="mt-auto pt-4 flex flex-col gap-2">
-        <Link to="/edit-profile" className="flex items-center gap-3 px-3 py-3 rounded-xl bg-[#111111] border border-white/5 hover:bg-[#1a1a1a] transition-colors">
+        <Link to="/edit-profile" onClick={closeSidebar} className="flex items-center gap-3 px-3 py-3 rounded-xl bg-[#111111] border border-white/5 hover:bg-[#1a1a1a] transition-colors">
           <img
             src={user?.photoUrl || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
             alt="Profile"

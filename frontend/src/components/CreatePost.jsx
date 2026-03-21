@@ -56,14 +56,11 @@ const CreatePost = ({ onPostCreated }) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            dispatch(addPost(res.data.post));
+            dispatch(addProfilePost(res.data.post));
 
-            // Allow parent component to react (e.g. closing a modal)
             if (onPostCreated) {
                 onPostCreated(res.data.post);
             }
-
-            // Reset form
             setContent('');
             removeImage();
 

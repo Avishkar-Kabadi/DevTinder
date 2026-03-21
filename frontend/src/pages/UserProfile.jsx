@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from "react-redux";
 import Post from "../components/Post";
 import PostSkeleton from "../components/PostSkeleton";
 import { setProfilePosts } from "../store/profilePostsSlice";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, FileText } from "lucide-react";
 
 export default function UserProfile() {
     const { id } = useParams();
@@ -212,18 +212,37 @@ export default function UserProfile() {
                         </button>
                     </div>
                     
-                    <div className="flex flex-col gap-6 w-full max-w-2xl mx-auto">
+                    <div className="grid grid-cols-3 gap-1.5 w-full">
                         {isPageLoading ? (
-                            <>
-                                <PostSkeleton />
-                                <PostSkeleton />
-                            </>
+                            [...Array(6)].map((_, i) => (
+                                <div key={i} className="aspect-square rounded-xl bg-base-200 animate-pulse"></div>
+                            ))
                         ) : profilePosts && profilePosts.length > 0 ? (
                             profilePosts.map((post) => (
-                                <Post key={post._id} post={post} />
+                                <button
+                                    key={post._id}
+                                    onClick={() => navigate(`/posts/${user._id}/${post._id}`)}
+                                    className="aspect-square rounded-xl overflow-hidden relative group border border-white/5 hover:border-cyan-500/30 transition-all duration-200"
+                                >
+                                    {post.image ? (
+                                        <img
+                                            src={post.image}
+                                            alt="post"
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gradient-to-br from-cyan-500/10 to-purple-500/10 flex flex-col items-start justify-end p-3 border border-white/5">
+                                            <FileText className="w-4 h-4 text-cyan-400/60 mb-1" />
+                                            <p className="text-[11px] font-medium text-gray-300 line-clamp-3 text-left leading-tight">{post.caption || 'Post'}</p>
+                                        </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <span className="text-white text-xs font-bold">{post.likesCount || 0} ♥</span>
+                                    </div>
+                                </button>
                             ))
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-10 opacity-60">
+                            <div className="col-span-3 flex flex-col items-center justify-center py-10 opacity-60">
                                 <p className="text-gray-400">No posts down here</p>
                             </div>
                         )}

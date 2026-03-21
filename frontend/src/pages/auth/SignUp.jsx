@@ -6,7 +6,6 @@ import { addUser } from "../../store/userSlice";
 import { baseUrl } from "../../utils/constants";
 import { checkValidData } from "../../utils/validate";
 import { Link } from "react-router-dom";
-// Updated Import
 import Icon from "../../assets/Icon.png";
 
 const SignUp = () => {
@@ -56,7 +55,6 @@ const SignUp = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-base-200/50 px-4 py-8 relative overflow-hidden">
-      {/* Decorative background blobs */}
       <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-secondary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
       <div className="absolute bottom-[-20%] right-[20%] w-96 h-96 bg-accent/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
@@ -79,7 +77,6 @@ const SignUpForm = ({ formData, setFormData, handleSubmit, error, loading }) => 
     <div className="card bg-base-100/90 backdrop-blur-xl w-full max-w-md shadow-2xl border border-white/10 z-10 animate-in zoom-in-95 duration-500 rounded-3xl">
       <div className="card-body p-8 sm:p-10">
         <div className="flex flex-col items-center mb-6">
-          {/* Replaced Globe with App Icon */}
           <div className="bg-primary/5 p-2 rounded-full mb-4 w-20 h-20 flex items-center justify-center overflow-hidden">
             <img
               src={Icon}
@@ -148,7 +145,6 @@ const VerifyOTPForm = ({ otp, setOtp, handleVerify, error, loading }) => {
   return (
     <div className="card bg-base-100/90 backdrop-blur-xl w-full max-w-md shadow-2xl border border-white/10 z-10 animate-in slide-in-from-right-8 duration-500 rounded-3xl">
       <div className="card-body p-8 sm:p-10 text-center">
-        {/* Consistent Styling for OTP icon view as well */}
         <div className="bg-secondary/10 p-4 rounded-full mx-auto w-20 h-20 flex items-center justify-center mb-6">
           <img
             src={Icon}

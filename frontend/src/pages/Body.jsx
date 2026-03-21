@@ -1,4 +1,4 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Notification from "../components/Notification";
 import { useSelector } from "react-redux";
@@ -8,6 +8,7 @@ import { useEffect } from "react";
 
 const Body = () => {
   const notification = useSelector((store) => store.chat?.notifications);
+  const user = useSelector((store) => store.user);
   const location = useLocation();
 
   // Scroll to top on route change
@@ -17,6 +18,10 @@ const Body = () => {
       mainContent.scrollTo(0, 0);
     }
   }, [location.pathname]);
+
+  if (user && !user.isProfileCompleted && location.pathname !== "/complete-profile") {
+    return <Navigate to="/complete-profile" replace />;
+  }
 
   return (
     <div className="drawer lg:drawer-open bg-[#0a0a0a] min-h-screen text-gray-100 selection:bg-cyan-500/30 selection:text-cyan-100">

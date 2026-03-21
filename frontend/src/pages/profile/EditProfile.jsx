@@ -153,43 +153,60 @@ const EditProfile = () => {
           )}
         </div>
       ) : (
-        <div className="bg-base-100 rounded-3xl p-6 md:p-8 border border-base-200 shadow-xl">
-          <div className="flex justify-between items-center mb-8 pb-4 border-b border-base-200">
-            <h1 className="text-2xl font-bold">Edit Profile</h1>
-            <X className="w-6 h-6 cursor-pointer" onClick={() => setEditing(false)} />
+        <div className="bg-base-100 max-w-2xl mx-auto md:rounded-3xl border-0 md:border border-base-200 md:shadow-xl min-h-[80vh] flex flex-col overflow-hidden">
+          {/* Header */}
+          <div className="flex justify-between items-center px-4 py-3 border-b border-base-200 bg-base-100 z-10 md:rounded-t-3xl">
+             <div className="flex items-center gap-4">
+                <X className="w-7 h-7 cursor-pointer hover:bg-base-200 p-1 rounded-full transition-colors" onClick={() => setEditing(false)} />
+                <h1 className="text-xl font-bold">Edit profile</h1>
+             </div>
+             <button type="submit" form="edit-profile-form" disabled={loading} className="text-blue-500 font-semibold text-lg hover:text-blue-400 disabled:opacity-50 transition-colors">
+                {loading ? "Saving..." : "Done"}
+             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex items-center gap-6 mb-8">
-              <img src={photoUrl} className="w-20 h-20 rounded-full object-cover border-2 border-primary" alt="Preview" />
-              <label className="btn btn-primary btn-sm rounded-lg cursor-pointer">
-                Change Photo
+          <form id="edit-profile-form" onSubmit={handleSubmit} className="flex-1 overflow-y-auto w-full pb-8">
+            {/* Profile Photo Section */}
+            <div className="flex flex-col items-center justify-center py-6">
+              <div className="relative group cursor-pointer">
+                <img src={photoUrl || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"} className="w-24 h-24 rounded-full object-cover border border-base-300 group-hover:opacity-80 transition-opacity" alt="Preview" />
+              </div>
+              <label className="text-blue-500 font-semibold mt-4 cursor-pointer hover:text-blue-400 text-base">
+                Change profile photo
                 <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
               </label>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input className="input input-bordered w-full" placeholder="First Name" value={firstName} onChange={e => setFirstName(e.target.value)} />
-              <input className="input input-bordered w-full" placeholder="Last Name" value={lastName} onChange={e => setLastName(e.target.value)} />
-            </div>
-
-            <input className="input input-bordered w-full" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
-            <textarea className="textarea textarea-bordered w-full h-32" placeholder="Bio" value={about} onChange={e => setAbout(e.target.value)} />
-
-            <div className="grid grid-cols-2 gap-4">
-              <input type="number" className="input input-bordered w-full" placeholder="Age" value={age} onChange={e => setAge(e.target.value)} />
-              <select className="select select-bordered w-full" value={gender} onChange={e => setGender(e.target.value)}>
-                <option value="">Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-4 mt-10">
-              <button type="button" onClick={() => setEditing(false)} className="btn btn-ghost">Cancel</button>
-              <button type="submit" disabled={loading} className="btn btn-primary px-8">
-                {loading ? "Saving..." : "Save Changes"}
-              </button>
+            {/* Inputs Section */}
+            <div className="border-t border-base-200">
+              <div className="flex items-center px-4 py-3 border-b border-base-200 hover:bg-base-200/50 transition-colors">
+                <label className="w-1/3 sm:w-1/4 font-semibold text-base">First name</label>
+                <input className="w-2/3 sm:w-3/4 bg-transparent outline-none text-base placeholder:text-base-content/40" placeholder="First Name" value={firstName} onChange={e => setFirstName(e.target.value)} />
+              </div>
+              <div className="flex items-center px-4 py-3 border-b border-base-200 hover:bg-base-200/50 transition-colors">
+                <label className="w-1/3 sm:w-1/4 font-semibold text-base">Last name</label>
+                <input className="w-2/3 sm:w-3/4 bg-transparent outline-none text-base placeholder:text-base-content/40" placeholder="Last Name" value={lastName} onChange={e => setLastName(e.target.value)} />
+              </div>
+              <div className="flex items-center px-4 py-3 border-b border-base-200 hover:bg-base-200/50 transition-colors">
+                <label className="w-1/3 sm:w-1/4 font-semibold text-base">Username</label>
+                <input className="w-2/3 sm:w-3/4 bg-transparent outline-none text-base placeholder:text-base-content/40" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} />
+              </div>
+              <div className="flex items-start px-4 py-3 border-b border-base-200 hover:bg-base-200/50 transition-colors">
+                <label className="w-1/3 sm:w-1/4 font-semibold text-base py-1">Bio</label>
+                <textarea className="w-2/3 sm:w-3/4 bg-transparent outline-none text-base placeholder:text-base-content/40 min-h-[80px] resize-none py-1" placeholder="Bio" value={about} onChange={e => setAbout(e.target.value)} />
+              </div>
+              <div className="flex items-center px-4 py-3 border-b border-base-200 hover:bg-base-200/50 transition-colors">
+                <label className="w-1/3 sm:w-1/4 font-semibold text-base">Age</label>
+                <input type="number" className="w-2/3 sm:w-3/4 bg-transparent outline-none text-base placeholder:text-base-content/40" placeholder="Age" value={age} onChange={e => setAge(e.target.value)} />
+              </div>
+              <div className="flex items-center px-4 py-3 hover:bg-base-200/50 transition-colors">
+                <label className="w-1/3 sm:w-1/4 font-semibold text-base">Gender</label>
+                <select className="w-2/3 sm:w-3/4 bg-transparent outline-none text-base appearance-none cursor-pointer text-base-content rounded-none" value={gender} onChange={e => setGender(e.target.value)}>
+                  <option value="" disabled className="text-base-content/40">Select Gender</option>
+                  <option value="Male" className="bg-base-100 font-sans text-base-content">Male</option>
+                  <option value="Female" className="bg-base-100 font-sans text-base-content">Female</option>
+                </select>
+              </div>
             </div>
           </form>
         </div>
