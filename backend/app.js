@@ -27,7 +27,6 @@ const apiLimiter = rateLimit({
 let CLIENT_URL = process.env.CLIENT_URL
 
 let corsOptions = {
-    // origin: "https://dev-tinder-plum-one.vercel.app",
     origin:CLIENT_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

@@ -4,14 +4,22 @@ const dbgr = require("debug")("development:Auth")
 const config = require('config');
 require('dotenv').config();
 
-const key = process.env.BREVO_API_KEY || config.get('BREVO_API_KEY')
-dbgr(key)
+let key = process.env.BREVO_API_KEY;
+if (!key) {
+    try {
+        key = config.get('BREVO_API_KEY');
+    } catch(e) {
+        dbgr("Warning: BREVO_API_KEY not found in env or config");
+        key = "DUMMY_KEY"; // prevent fatal crash during boot if mail isn't completely configured
+    }
+}
+dbgr(key ? "API Key Loaded" : "API Key Missing");
 
 
 const sendEmail = async (to, subject, content) => {
     try {
         const client = new BrevoClient({
-            apiKey: process.env.BREVO_API_KEY || config.get('BREVO_API_KEY'),
+            apiKey: key,
         });
 
 
