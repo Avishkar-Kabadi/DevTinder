@@ -30,8 +30,9 @@ const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
 const CreatePost = lazy(() => import("./pages/profile/CreatePost"));
 const UserPostsDetail = lazy(() => import("./pages/profile/UserPostsDetail"));
 
-
 import CallComponent from "./components/CallComponent";
+import GlobalAlerts from "./components/GlobalAlerts";
+import Notification from "./components/Notification";
 
 import { addUser } from "./store/userSlice";
 import { baseUrl } from "./utils/constants";
@@ -134,6 +135,8 @@ function App() {
 
   return (
     <>
+      <Notification />
+      <GlobalAlerts />
       <CallComponent />
       <BrowserRouter basename="/">
         <Suspense fallback={

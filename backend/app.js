@@ -98,14 +98,30 @@ const onlineUsersMap = new Map();
 io.on("connection", (socket) => {
     dbgr("⚡ User connected:", socket.id);
     
+    // Auto-join user room and track online status if userId is provided in auth
+    const userId = socket.handshake.auth?.userId;
+    if (userId) {
+        socket.join(userId);
+        if (!onlineUsersMap.has(userId)) {
+            onlineUsersMap.set(userId, new Set());
+        }
+        onlineUsersMap.get(userId).add(socket.id);
+        io.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
+        dbgr(`👤 User ${userId} joined via socket ${socket.id}`);
+    }
+
     socket.on("getOnlineUsers", () => {
         socket.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
     });
     
-    socket.on("joinUser", (userId) => {
-        if (userId) {
-            socket.join(userId);
-            onlineUsersMap.set(userId, socket.id);
+    // Kept for backward compatibility or explicit re-joins
+    socket.on("joinUser", (id) => {
+        if (id) {
+            socket.join(id);
+            if (!onlineUsersMap.has(id)) {
+                onlineUsersMap.set(id, new Set());
+            }
+            onlineUsersMap.get(id).add(socket.id);
             io.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
         }
     });
@@ -137,17 +153,19 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", () => {
-        dbgr("❌ User disconnected");
-        let disconnectedUserId = null;
-        for (let [userId, sockId] of onlineUsersMap.entries()) {
-            if (sockId === socket.id) {
-                disconnectedUserId = userId;
+        dbgr("❌ Socket disconnected:", socket.id);
+        
+        // Find and remove this specific socket from the user's set
+        for (let [uId, socketSet] of onlineUsersMap.entries()) {
+            if (socketSet.has(socket.id)) {
+                socketSet.delete(socket.id);
+                if (socketSet.size === 0) {
+                    onlineUsersMap.delete(uId);
+                    io.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
+                    dbgr(`👤 User ${uId} is now offline`);
+                }
                 break;
             }
-        }
-        if (disconnectedUserId) {
-            onlineUsersMap.delete(disconnectedUserId);
-            io.emit("onlineUsers", Array.from(onlineUsersMap.keys()));
         }
     });
 });

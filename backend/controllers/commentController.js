@@ -30,7 +30,7 @@ module.exports.createComment = async (req, res) => {
         // Notify post owner
         const postModel = require('../models/postModel');
         const Notification = require('../models/notificationModel');
-        const post = await postModel.findById(postId);
+        const post = await postModel.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } }, { new: true });
         
         if (post && post.owner.toString() !== userId.toString()) {
             const notification = await Notification.create({
@@ -106,6 +106,7 @@ module.exports.deleteComment = async (req, res) => {
         }
 
         await commentModel.findByIdAndDelete(commentId);
+        await postModel.findByIdAndUpdate(comment.post, { $inc: { commentsCount: -1 } });
 
         return res.status(204).send();
 

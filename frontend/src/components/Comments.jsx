@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { baseUrl } from '../utils/constants';
 import { Trash2, Send } from 'lucide-react';
+import { confirmAlert, toastAlert } from '../utils/alerts';
 
 export default function Comments({ postId, currentUser, postOwnerId }) {
     const [comments, setComments] = useState([]);
@@ -32,13 +33,15 @@ export default function Comments({ postId, currentUser, postOwnerId }) {
 
     // --- DELETE API INTEGRATION ---
     const handleDeleteComment = async (commentId) => {
-        if (!window.confirm("Delete this comment?")) return;
+        if (!await confirmAlert("Delete Comment", "Are you sure you want to delete this comment?", "Delete", "Cancel")) return;
         try {
             await axios.delete(`${baseUrl}/api/comments/comment/${commentId}`, { withCredentials: true });
             // Update UI locally
             setComments(comments.filter(c => c._id !== commentId));
+            toastAlert("Comment deleted", "success");
         } catch (err) {
             console.error("Delete failed", err);
+            toastAlert("Failed to delete comment", "error");
         }
     };
 

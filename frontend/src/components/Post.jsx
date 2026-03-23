@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ThumbsUp, MessageSquare, Share2, Bookmark, MoreVertical, X, Edit2, Trash2 } from 'lucide-react';
 import Comments from './Comments';
 import { useNavigate } from 'react-router-dom';
+import { confirmAlert, toastAlert } from '../utils/alerts';
 
 const timeAgo = (date) => {
     if (!date) return '';
@@ -30,12 +31,14 @@ export default function Post({ post, isProfilePage = false, onDelete, onUpdate }
     const isLiked = post.likes?.includes(currentUser?._id);
 
     const handleDelete = async () => {
-        if (!window.confirm("Are you sure you want to delete this post?")) return;
+        if (!await confirmAlert("Delete Post", "Are you sure you want to delete this post? This action cannot be undone.", "Delete", "Cancel")) return;
         try {
             await axios.delete(`${baseUrl}/api/posts/post/${post._id}`, { withCredentials: true });
+            toastAlert("Post deleted successfully", "success");
             if (onDelete) onDelete(post._id);
         } catch (err) {
             console.error(err);
+            toastAlert("Failed to delete post", "error");
         }
     };
 
@@ -163,12 +166,12 @@ export default function Post({ post, isProfilePage = false, onDelete, onUpdate }
                         </div>
                     )}
                 </div>
-                {post.comments?.length > 0 && (
+                {post.commentsCount > 0 && (
                     <div 
                         className="cursor-pointer hover:underline hover:text-gray-300 transition-colors"
                         onClick={() => setShowComments(!showComments)}
                     >
-                        {post.comments?.length} {post.comments?.length === 1 ? 'Comment' : 'Comments'}
+                        {post.commentsCount} {post.commentsCount === 1 ? 'Comment' : 'Comments'}
                     </div>
                 )}
             </div>
@@ -200,7 +203,7 @@ export default function Post({ post, isProfilePage = false, onDelete, onUpdate }
             {/* Comments Section */}
             {showComments && (
                 <div className="border-t border-white/10 bg-[#111111]/50 p-4 transition-all duration-300 animate-in slide-in-from-top-2">
-                    <Comments postId={post._id} currentUser={currentUser} />
+                    <Comments postId={post._id} currentUser={currentUser} postOwnerId={post.owner?._id} />
                 </div>
             )}
         </article>
