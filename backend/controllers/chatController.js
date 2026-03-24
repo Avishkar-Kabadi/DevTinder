@@ -117,6 +117,79 @@ module.exports.getMessages = async (req, res) => {
     }
 };
 
+module.exports.editMessage = async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const { text } = req.body;
+        const userId = req.user._id;
+
+        if (!text || !text.trim()) {
+            return res.status(400).json({ message: "Message text is required" });
+        }
+
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ message: "Message not found" });
+        }
+        if (message.sender.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "Not allowed to edit this message" });
+        }
+        if (message.isDeleted) {
+            return res.status(400).json({ message: "Cannot edit a deleted message" });
+        }
+
+        message.text = text.trim();
+        message.editedAt = new Date();
+        await message.save();
+
+        if (req.io) {
+            req.io.to(message.conversationId.toString()).emit("messageEdited", {
+                messageId: message._id,
+                text: message.text,
+                editedAt: message.editedAt,
+                conversationId: message.conversationId,
+            });
+        }
+
+        return res.json({ success: true, data: message });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports.deleteMessageForEveryone = async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const userId = req.user._id;
+
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ message: "Message not found" });
+        }
+        if (message.sender.toString() !== userId.toString()) {
+            return res.status(403).json({ message: "Not allowed to delete this message" });
+        }
+
+        message.text = "This message was deleted";
+        message.photoUrl = null;
+        message.isDeleted = true;
+        message.editedAt = new Date();
+        await message.save();
+
+        if (req.io) {
+            req.io.to(message.conversationId.toString()).emit("messageDeleted", {
+                messageId: message._id,
+                conversationId: message.conversationId,
+                text: message.text,
+            });
+        }
+
+        return res.json({ success: true, data: message });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 
 module.exports.getConversations = async (req, res) => {
     try {

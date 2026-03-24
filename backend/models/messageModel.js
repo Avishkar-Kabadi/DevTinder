@@ -14,7 +14,15 @@ const messageSchema = new mongoose.Schema({
         ref: "User"
     },
     text: String,
-    photoUrl: String
+    photoUrl: String,
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    editedAt: {
+        type: Date,
+        default: null
+    }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Message", messageSchema);

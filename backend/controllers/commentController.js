@@ -1,4 +1,5 @@
 const commentModel = require('../models/commentModel');
+const postModel = require('../models/postModel');
 
 
 
@@ -28,7 +29,6 @@ module.exports.createComment = async (req, res) => {
         }
 
         // Notify post owner
-        const postModel = require('../models/postModel');
         const Notification = require('../models/notificationModel');
         const post = await postModel.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } }, { new: true });
         

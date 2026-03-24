@@ -10,6 +10,8 @@ router.get("/conversations", auth, chatController.getConversations);
 router.post("/message/:conversationId", auth, chatController.sendMessage);
 
 router.get("/message/:conversationId", auth, chatController.getMessages);
+router.put("/message/:messageId", auth, chatController.editMessage);
+router.delete("/message/:messageId", auth, chatController.deleteMessageForEveryone);
 
 // Call history
 router.post("/calls", auth, callController.saveCallHistory);
