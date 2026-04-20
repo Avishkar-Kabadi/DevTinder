@@ -8,7 +8,7 @@ const appSlice = createSlice({
     },
     reducers: {
         setOnlineStatus: (state, action) => {
-            state.isOnline = !state.isOnline;
+            state.isOnline = Boolean(action.payload);
         },
     }
 });

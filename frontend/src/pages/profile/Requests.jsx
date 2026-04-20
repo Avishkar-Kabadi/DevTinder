@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import { baseUrl } from "../../utils/constants";
 import { addRequests, removeReqest } from "../../store/requestSlice";
 import { Check, X, RefreshCw, Loader2 } from "lucide-react";

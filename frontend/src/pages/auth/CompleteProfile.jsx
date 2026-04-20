@@ -13,7 +13,6 @@ import { useNavigate } from "react-router-dom";
 const CompleteProfile = () => {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -46,7 +45,7 @@ const CompleteProfile = () => {
       dispatch(addUser(res.data.user));
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update profile");
+      console.error(err.response?.data?.message || "Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -60,7 +59,7 @@ const CompleteProfile = () => {
       )}
 
       {step === 2 && (
-        <StepPhoto formData={formData} setFormData={setFormData} loading={loading} back={() => setStep(2)} onSubmit={onSubmit} />
+        <StepPhoto formData={formData} setFormData={setFormData} loading={loading} back={() => setStep(1)} onSubmit={onSubmit} />
       )}
     </div>
   );

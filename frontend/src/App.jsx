@@ -77,7 +77,7 @@ function App() {
             Notification.requestPermission();
         }
 
-      } catch (error) {
+      } catch {
         console.log("User not authenticated, socket not connected");
       } finally {
         setLoading(false);

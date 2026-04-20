@@ -1,5 +1,5 @@
 import { X, Bell } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { removeNotifications } from "../store/chatSlice";
 import { decodeMessage } from "../utils/messageEncoder";
@@ -8,6 +8,13 @@ const Notification = () => {
   const dispatch = useDispatch();
   const notification = useSelector((store) => store.chat?.notifications);
   const [isVisible, setIsVisible] = useState(false);
+
+  const handleDismiss = useCallback(() => {
+    setIsVisible(false);
+    setTimeout(() => {
+      dispatch(removeNotifications());
+    }, 400);
+  }, [dispatch]);
 
   useEffect(() => {
     if (notification) {
@@ -18,14 +25,7 @@ const Notification = () => {
         clearTimeout(autoHide);
       };
     }
-  }, [notification]);
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    setTimeout(() => {
-      dispatch(removeNotifications());
-    }, 400);
-  };
+  }, [notification, handleDismiss]);
 
   if (!notification) return null;
 

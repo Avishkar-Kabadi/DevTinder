@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import axios from 'axios';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { baseUrl } from '../../utils/constants';
 import { ImagePlus, X, Send, Type, Image as ImageIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

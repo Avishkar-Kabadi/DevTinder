@@ -50,7 +50,7 @@ const chatSlice = createSlice({
             state.notifications = action.payload;
         },
 
-        removeNotifications: (state, action) => {
+        removeNotifications: (state) => {
             state.notifications = null;
         },
 

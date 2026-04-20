@@ -107,7 +107,9 @@ export default function CallComponent() {
 
         const handleCallAccepted = async (signal) => {
             if (peerRef.current) {
-                await peerRef.current.setRemoteDescription(new RTCSessionDescription(signal));
+                if (signal) {
+                    await peerRef.current.setRemoteDescription(new RTCSessionDescription(signal));
+                }
                 setRemoteDescriptionSet(true);
                 callStartTimeRef.current = Date.now();
                 setCallState('active');
@@ -219,8 +221,15 @@ export default function CallComponent() {
 
     const answerCall = async () => {
         if (!incomingCallData || !incomingCallData.signal) {
-            alert("This call cannot be answered as no connection signal was received (Mobile-to-Web calling is under development).");
-            endCallLocally();
+            setRemoteUserParams({
+                name: incomingCallData?.name || "Caller",
+                photoUrl: incomingCallData?.photoUrl,
+                id: incomingCallData?.from,
+            });
+            callStartTimeRef.current = Date.now();
+            setIncomingCallData(null);
+            setCallState('active');
+            socket.emit("answerCall", { to: incomingCallData?.from, signal: null });
             return;
         }
         setCallState('active');

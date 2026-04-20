@@ -27,7 +27,7 @@ export default function UserProfile() {
                 .catch(() => navigate('/'))
                 .finally(() => setProfileUserLoading(false));
         }
-    }, [id]);
+    }, [id, profileUser, navigate]);
 
     const currentUser = useSelector(store => store.user);
     const profilePosts = useSelector(store => store.profilePosts) || [];
@@ -38,14 +38,6 @@ export default function UserProfile() {
     const [loading, setLoading] = useState(false);
     const [isPageLoading, setIsPageLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
-
-    if (profileUserLoading) {
-        return (
-            <div className="flex justify-center items-center h-[60vh]">
-                <span className="loading loading-spinner text-primary loading-lg"></span>
-            </div>
-        );
-    }
 
     const fetchUserPosts = async (isRefetch = false) => {
         if (!user?._id) return;
@@ -64,8 +56,18 @@ export default function UserProfile() {
     };
 
     useEffect(() => {
-        fetchUserPosts();
+        if (user?._id) {
+            fetchUserPosts();
+        }
     }, [user?._id, dispatch]);
+
+    if (profileUserLoading) {
+        return (
+            <div className="flex justify-center items-center h-[60vh]">
+                <span className="loading loading-spinner text-primary loading-lg"></span>
+            </div>
+        );
+    }
 
     if (!user) {
         return (
