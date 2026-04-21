@@ -1,11 +1,11 @@
-export default function getOtpEmailTemplate(otp, type = "verification") {
-    const title = type === "forgot" ? "Reset Your Password" : "Verify Your Email";
-    const subtitle =
-        type === "forgot"
-            ? "Use the OTP below to reset your password."
-            : "Use the OTP below to verify your email address.";
+const getOtpEmailTemplate = (otp, type = "verification") => {
+  const title = type === "forgot" ? "Reset Your Password" : "Verify Your Email";
+  const subtitle =
+    type === "forgot"
+      ? "Use the OTP below to reset your password."
+      : "Use the OTP below to verify your email address.";
 
-    return `
+  return `
   <html>
     <body style="margin:0; padding:0; background-color:#f4f6f8; font-family: Arial, sans-serif;">
       
@@ -91,3 +91,5 @@ export default function getOtpEmailTemplate(otp, type = "verification") {
   </html>
   `;
 };
+
+module.exports = getOtpEmailTemplate;

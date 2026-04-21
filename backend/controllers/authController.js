@@ -7,7 +7,7 @@ const cloudinary = require("../config/cloudinary");
 const otpGenerator = require('otp-generator');
 const { sendEmail } = require('../utils/mailer');
 const ConnectionRequest = require('../models/connectionRequestModel');
-const getOtpEmailTemplate = require('../utils/emailTemplate');
+const {getOtpEmailTemplate} = require('../utils/emailTemplate');
 
 const cookieOptions = {
     httpOnly: true,
