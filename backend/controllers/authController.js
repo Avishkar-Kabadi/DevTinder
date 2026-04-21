@@ -7,6 +7,7 @@ const cloudinary = require("../config/cloudinary");
 const otpGenerator = require('otp-generator');
 const { sendEmail } = require('../utils/mailer');
 const ConnectionRequest = require('../models/connectionRequestModel');
+const getOtpEmailTemplate = require('../utils/emailTemplate');
 
 const cookieOptions = {
     httpOnly: true,
@@ -87,7 +88,7 @@ module.exports.registerUser = async (req, res) => {
 
 
         try {
-            await sendEmail(email, "Your Verification Code", `Your OTP is: ${otp}`);
+            await sendEmail(email,getOtpEmailTemplate(otp, "verification"));
         } catch (mailError) {
             dbgr("Email Service Error:", mailError);
             return res.status(503).json({
