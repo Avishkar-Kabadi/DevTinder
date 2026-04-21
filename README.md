@@ -67,6 +67,18 @@
 
 ---
 
+## 🏗️ **Engineering Standards & Best Practices**
+
+To ensure stability and maintainability, the DevTinder engineering team adheres to the following standards:
+
+1. **Route Guard Parity**: Route redirection (like `/signup` to `/complete-profile` or `/`) must explicitly check user states (`isProfileCompleted`, verification status) to avoid deadlocks.
+2. **Cookie Policy Unification**: All authentication cookies (Login, Logout, OTP verification) share a unified options object ensuring standard flags like `httpOnly`, `secure` (production), and `sameSite` are consistently applied across environments.
+3. **Strict React Hooks Dependencies**: We enforce complete dependency arrays in `useEffect`. Async operations inside hooks are memoized via `useCallback` to prevent cascading renders and infinite loops.
+4. **Functional State Updates**: Components use functional state updates (`setState(prev => ...)`) especially in effect-driven actions to avoid stale closures.
+5. **Test Configuration Parity**: The backend test environment uses dedicated configuration (`config/test.json`) mirroring production setups and mocks external APIs like Mail services to ensure deterministic test runs.
+
+---
+
 ## 📂 **Inside the Files**
 
 <details>
@@ -128,3 +140,8 @@ npm run dev
 <img src="https://www.google.com/search?q=https://forthebadge.com/images/featured/featured-built-with-love.svg" height="25" />
 <img src="https://www.google.com/search?q=https://forthebadge.com/images/featured/featured-runs-with-butter.svg" height="25" />
 </p>
+
+
+
+```
+set DEBUG=development

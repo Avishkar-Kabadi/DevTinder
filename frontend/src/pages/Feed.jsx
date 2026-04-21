@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addFeed } from "../store/feedSlice";
 import { baseUrl } from "../utils/constants";
@@ -16,7 +16,7 @@ const Feed = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchPosts = async (isRefetch = false) => {
+  const fetchPosts = React.useCallback(async (isRefetch = false) => {
     if (isRefetch) setIsRefreshing(true);
     else setIsLoading(true);
 
@@ -29,7 +29,7 @@ const Feed = () => {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     // Only fetch initially if feed empty to save Network, 
@@ -39,6 +39,7 @@ const Feed = () => {
     } else {
       setIsLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

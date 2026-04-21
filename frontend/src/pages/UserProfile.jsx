@@ -1,6 +1,6 @@
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { UserPlus, CheckCircle2, ArrowLeft, MessageCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { baseUrl } from "../utils/constants";
 import { useSelector, useDispatch } from "react-redux";
@@ -39,7 +39,7 @@ export default function UserProfile() {
     const [isPageLoading, setIsPageLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    const fetchUserPosts = async (isRefetch = false) => {
+    const fetchUserPosts = React.useCallback(async (isRefetch = false) => {
         if (!user?._id) return;
         if (isRefetch) setIsRefreshing(true);
         else setIsPageLoading(true);
@@ -53,13 +53,13 @@ export default function UserProfile() {
             setIsPageLoading(false);
             setIsRefreshing(false);
         }
-    };
+    }, [dispatch, user?._id]);
 
     useEffect(() => {
         if (user?._id) {
             fetchUserPosts();
         }
-    }, [user?._id, dispatch]);
+    }, [user?._id, fetchUserPosts]);
 
     if (profileUserLoading) {
         return (

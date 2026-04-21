@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { ArrowLeft, RefreshCw } from "lucide-react";
@@ -24,7 +24,7 @@ const UserPostsDetail = () => {
     const [loading, setLoading] = useState(false);
     const postRefs = useRef({});
 
-    const fetchPosts = async () => {
+    const fetchPosts = React.useCallback(async () => {
         setLoading(true);
         try {
             const url = isSef 
@@ -43,7 +43,7 @@ const UserPostsDetail = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [dispatch, isSef, userId]);
 
     const handleDeletePost = (deletedId) => {
         const remaining = posts.filter(p => p._id !== deletedId);
@@ -59,6 +59,7 @@ const UserPostsDetail = () => {
         if (!posts || posts.length === 0) {
             fetchPosts();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
 
     useEffect(() => {

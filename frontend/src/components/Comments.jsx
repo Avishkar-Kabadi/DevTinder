@@ -8,17 +8,18 @@ export default function Comments({ postId, currentUser, postOwnerId }) {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
 
-    const fetchComments = async () => {
-        try {
-            const res = await axios.get(`${baseUrl}/api/comments/${postId}`, { withCredentials: true });
-            setComments(res.data);
-        } catch (err) {
-            console.error("Error fetching comments", err);
-        }
-    };
-
     useEffect(() => {
+        let isMounted = true;
+        const fetchComments = async () => {
+            try {
+                const res = await axios.get(`${baseUrl}/api/comments/${postId}`, { withCredentials: true });
+                if (isMounted) setComments(res.data);
+            } catch (err) {
+                console.error("Error fetching comments", err);
+            }
+        };
         if (postId) fetchComments();
+        return () => { isMounted = false; };
     }, [postId]);
 
     const handlePostComment = async (e) => {
@@ -26,7 +27,7 @@ export default function Comments({ postId, currentUser, postOwnerId }) {
         if (!newComment.trim()) return;
         try {
             const res = await axios.post(`${baseUrl}/api/comments/comment`, { postId, text: newComment }, { withCredentials: true });
-            setComments([...comments, res.data]);
+            setComments(prev => [...prev, res.data]);
             setNewComment("");
         } catch (err) { console.log(err); }
     };
@@ -37,7 +38,7 @@ export default function Comments({ postId, currentUser, postOwnerId }) {
         try {
             await axios.delete(`${baseUrl}/api/comments/comment/${commentId}`, { withCredentials: true });
             // Update UI locally
-            setComments(comments.filter(c => c._id !== commentId));
+            setComments(prev => prev.filter(c => c._id !== commentId));
             toastAlert("Comment deleted", "success");
         } catch (err) {
             console.error("Delete failed", err);

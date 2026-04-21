@@ -1,0 +1,5 @@
+{
+    "MONGODB_URL": "mongodb://localhost:27017/devtinder_test",
+    "PORT": "5001",
+    "BREVO_API_KEY": "DUMMY_KEY_FOR_TESTS"
+}

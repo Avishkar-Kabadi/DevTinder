@@ -12,6 +12,7 @@ const userModel = require('../models/userModel');
 const feedRoutes = require('../routes/feedRoutes');
 const postRoutes = require('../routes/postRoutes');
 const authRoutes = require('../routes/authRoutes');
+const connectionRoutes = require('../routes/connectionRoutes');
 const ConnectionRequest = require('../models/connectionRequestModel');
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(cookieParser());
 app.use((req, res, next) => { req.io = { to: () => ({ emit: () => {} }) }; next(); });
 app.use('/auth', authRoutes);
 app.use('/api', feedRoutes);
+app.use('/api', connectionRoutes);
 app.use('/api/posts', postRoutes);
 
 // -----------------------------------------------------------------------

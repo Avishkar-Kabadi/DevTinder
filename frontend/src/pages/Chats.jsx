@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Clock, MessageSquare, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { setConversations, setCallHistory } from "../store/chatSlice";
@@ -41,9 +41,9 @@ const Chats = () => {
   useEffect(() => {
     fetchConversations();
     fetchCalls();
-  }, []);
+  }, [fetchConversations, fetchCalls]);
 
-  const fetchCalls = async () => {
+  const fetchCalls = React.useCallback(async () => {
     try {
         const res = await axios.get(baseUrl + "/api/chat/calls", { withCredentials: true });
         const normalized = res.data.data.map(call => {
@@ -65,9 +65,9 @@ const Chats = () => {
     } catch(err) {
         console.error("Error fetching call history", err);
     }
-  };
+  }, [dispatch, user._id]);
 
-  const fetchConversations = async () => {
+  const fetchConversations = React.useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(baseUrl + "/api/chat/conversations", {
@@ -79,7 +79,7 @@ const Chats = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch]);
 
   if (loading && (!conversations || conversations.length === 0)) {
     return (

@@ -62,7 +62,7 @@ describe('Auth — registerUser', () => {
     });
 
     it('returns 409 when email already exists', async () => {
-        await request(app).post('/auth/register').send(VALID_USER);
+        await registerAndVerify();
         const res = await request(app).post('/auth/register').send(VALID_USER);
         expect(res.statusCode).toBe(409);
     });

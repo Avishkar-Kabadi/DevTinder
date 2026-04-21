@@ -32,23 +32,23 @@ export default function Notifications() {
     const navigate = useNavigate();
     const notifications = useSelector(state => state.notifications);
 
-    const fetchNotifications = async () => {
+    const fetchNotifications = React.useCallback(async () => {
         try {
             const res = await axios.get(baseUrl + "/api/notifications", { withCredentials: true });
             dispatch(setNotifications(res.data.notifications));
         } catch (error) {
             console.error("Fetch notifications failed", error);
         }
-    };
+    }, [dispatch]);
 
-    const markAsRead = async () => {
+    const markAsRead = React.useCallback(async () => {
         try {
             await axios.post(baseUrl + "/api/notifications/mark-read", {}, { withCredentials: true });
             dispatch(markAllAsRead());
         } catch (error) {
             console.error("Mark read failed", error);
         }
-    };
+    }, [dispatch]);
 
     useEffect(() => {
         fetchNotifications();
@@ -58,7 +58,7 @@ export default function Notifications() {
             }
         }, 2000);
         return () => clearTimeout(timeoutId);
-    }, []);
+    }, [fetchNotifications, markAsRead, notifications]);
 
     if (!notifications) return <div className="p-8 text-center text-base-content/50">Loading notifications...</div>;
 

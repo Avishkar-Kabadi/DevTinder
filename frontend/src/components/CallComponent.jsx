@@ -6,6 +6,8 @@ import axios from 'axios';
 import { baseUrl } from '../utils/constants';
 import { PhoneOff, Phone as PhoneIcon, Video, Mic, MicOff, VideoOff, Camera, Maximize2, Minimize2 } from 'lucide-react';
 
+const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
 export default function CallComponent() {
     const user = useSelector(store => store.user);
     const dispatch = useDispatch();
@@ -30,7 +32,73 @@ export default function CallComponent() {
     const ringAudioRef = useRef(null);
     const dialAudioRef = useRef(null);
     const callStartTimeRef = useRef(null);
-    const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+    const iceCandidateQueue = useRef([]);
+    const [remoteDescriptionSet, setRemoteDescriptionSet] = useState(false);
+
+    const endCallLocally = React.useCallback(() => {
+        // Calculate duration before clearing state
+        if (callStartTimeRef.current && remoteUserParams) {
+            const endedAt = new Date();
+            const startedAt = new Date(callStartTimeRef.current);
+            const durationSecs = Math.floor((endedAt - startedAt) / 1000);
+            const mins = Math.floor(durationSecs / 60);
+            const secs = durationSecs % 60;
+            const durationStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+            // Optimistic Redux update for instant UI
+            dispatch(addCallHistory({
+                otherUserId: remoteUserParams.id,
+                otherUserName: remoteUserParams.name,
+                otherUserPhoto: remoteUserParams.photoUrl,
+                type: isVideoCall ? 'video' : 'audio',
+                startTime: startedAt.toISOString(),
+                duration: durationStr,
+                durationSecs,
+            }));
+
+            // Persist to DB (fire-and-forget, no await)
+            if (durationSecs > 0) {
+                axios.post(`${baseUrl}/api/chat/calls`, {
+                    receiverId: remoteUserParams.id,
+                    type: isVideoCall ? 'video' : 'audio',
+                    duration: durationSecs,
+                    startedAt: startedAt.toISOString(),
+                    endedAt: endedAt.toISOString(),
+                    status: 'completed',
+                }, { withCredentials: true }).catch(err => {
+                    console.error('Failed to save call history:', err);
+                });
+            }
+
+            callStartTimeRef.current = null;
+        }
+
+        if (localStream) {
+            localStream.getTracks().forEach(t => t.stop());
+            setLocalStream(null);
+        }
+        if (peerRef.current) {
+            peerRef.current.close();
+            peerRef.current = null;
+        }
+        setRemoteStream(null);
+        setCallState('idle');
+        setIncomingCallData(null);
+        setRemoteUserParams(null);
+        setIsMuted(false);
+        setIsVideoOff(false);
+        setRemoteDescriptionSet(false);
+        iceCandidateQueue.current = [];
+    }, [dispatch, isVideoCall, localStream, remoteUserParams]);
+
+    const endCall = React.useCallback(() => {
+        const to = incomingCallData ? incomingCallData.from : (remoteUserParams ? remoteUserParams.id : null);
+        if (to) {
+            socket.emit("endCall", { to });
+        }
+        endCallLocally();
+    }, [incomingCallData, remoteUserParams, endCallLocally]);
 
     useEffect(() => {
         if (!ringAudioRef.current) {
@@ -71,8 +139,7 @@ export default function CallComponent() {
         }
     }, [remoteStream, callState, isVideoCall]);
 
-    const iceCandidateQueue = useRef([]);
-    const [remoteDescriptionSet, setRemoteDescriptionSet] = useState(false);
+
 
     useEffect(() => {
         const handleIncomingCall = (data) => {
@@ -145,7 +212,7 @@ export default function CallComponent() {
             socket.off("iceCandidate", handleIceCandidate);
             socket.off("callEnded", handleCallEnded);
         };
-    }, [callState]);
+    }, [callState, endCallLocally, remoteDescriptionSet]);
 
     useEffect(() => {
         if (remoteDescriptionSet && peerRef.current && iceCandidateQueue.current.length > 0) {
@@ -217,7 +284,7 @@ export default function CallComponent() {
 
         window.addEventListener('startCall', handleStartCall);
         return () => window.removeEventListener('startCall', handleStartCall);
-    }, [user]);
+    }, [endCallLocally, user]);
 
     const answerCall = async () => {
         if (!incomingCallData || !incomingCallData.signal) {
@@ -282,69 +349,7 @@ export default function CallComponent() {
         }
     };
 
-    const endCallLocally = () => {
-        // Calculate duration before clearing state
-        if (callStartTimeRef.current && remoteUserParams) {
-            const endedAt = new Date();
-            const startedAt = new Date(callStartTimeRef.current);
-            const durationSecs = Math.floor((endedAt - startedAt) / 1000);
-            const mins = Math.floor(durationSecs / 60);
-            const secs = durationSecs % 60;
-            const durationStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-            // Optimistic Redux update for instant UI
-            dispatch(addCallHistory({
-                otherUserId: remoteUserParams.id,
-                otherUserName: remoteUserParams.name,
-                otherUserPhoto: remoteUserParams.photoUrl,
-                type: isVideoCall ? 'video' : 'audio',
-                startTime: startedAt.toISOString(),
-                duration: durationStr,
-                durationSecs,
-            }));
-
-            // Persist to DB (fire-and-forget, no await)
-            if (durationSecs > 0) {
-                axios.post(`${baseUrl}/api/chat/calls`, {
-                    receiverId: remoteUserParams.id,
-                    type: isVideoCall ? 'video' : 'audio',
-                    duration: durationSecs,
-                    startedAt: startedAt.toISOString(),
-                    endedAt: endedAt.toISOString(),
-                    status: 'completed',
-                }, { withCredentials: true }).catch(err => {
-                    console.error('Failed to save call history:', err);
-                });
-            }
-
-            callStartTimeRef.current = null;
-        }
-
-        if (localStream) {
-            localStream.getTracks().forEach(t => t.stop());
-            setLocalStream(null);
-        }
-        if (peerRef.current) {
-            peerRef.current.close();
-            peerRef.current = null;
-        }
-        setRemoteStream(null);
-        setCallState('idle');
-        setIncomingCallData(null);
-        setRemoteUserParams(null);
-        setIsMuted(false);
-        setIsVideoOff(false);
-        setRemoteDescriptionSet(false);
-        iceCandidateQueue.current = [];
-    };
-
-    const endCall = () => {
-        const to = incomingCallData ? incomingCallData.from : (remoteUserParams ? remoteUserParams.id : null);
-        if (to) {
-            socket.emit("endCall", { to });
-        }
-        endCallLocally();
-    };
 
     const toggleMute = () => {
         if (localStream) {

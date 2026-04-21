@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Send, ArrowLeft, Phone, Video, Info, RefreshCw, ArrowDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
@@ -36,7 +36,7 @@ const Message = () => {
   const [showScrollDown, setShowScrollDown] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchMessages = async (isRefetch = false) => {
+  const fetchMessages = React.useCallback(async (isRefetch = false) => {
     if (isRefetch) setIsRefreshing(true);
     else setLoading(true);
 
@@ -60,7 +60,7 @@ const Message = () => {
       setIsRefreshing(false);
       setLoading(false);
     }
-  };
+  }, [conversationId, currentUserId, otherUserId]);
 
   const startCall = (isVideo) => {
     if (!otherUserId) return;
@@ -172,12 +172,12 @@ const Message = () => {
       socket.off("onlineUsers", handleOnlineUsers);
       dispatch(removeActiveConversationId());
     };
-  }, [conversationId, currentUserId]);
+  }, [conversationId, currentUserId, dispatch, otherUserId]);
 
   useEffect(() => {
     if (conversationId) fetchMessages();
     dispatch(clearNewMessage({ conversationId }));
-  }, [conversationId]);
+  }, [conversationId, dispatch, fetchMessages]);
 
   useEffect(() => {
     scrollToBottom();

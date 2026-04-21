@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Phone, PhoneIncoming, PhoneMissed, PhoneOutgoing, Video, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setCallHistory } from "../store/chatSlice";
 import { baseUrl } from "../utils/constants";
@@ -30,11 +30,7 @@ export default function CallHistory() {
   const callHistory = useSelector((store) => store.chat?.callHistory) || [];
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    fetchCalls();
-  }, []);
-
-  const fetchCalls = async () => {
+  const fetchCalls = React.useCallback(async () => {
     if (callHistory.length === 0) setLoading(true);
     try {
         const res = await axios.get(baseUrl + "/api/chat/calls", { withCredentials: true });
@@ -59,7 +55,11 @@ export default function CallHistory() {
     } finally {
         setLoading(false);
     }
-  };
+  }, [callHistory.length, dispatch, user._id]);
+
+  useEffect(() => {
+    fetchCalls();
+  }, [fetchCalls]);
 
   return (
     <div className="w-full max-w-3xl mx-auto flex flex-col h-full animate-in fade-in duration-300">

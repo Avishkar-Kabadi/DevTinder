@@ -8,6 +8,21 @@ const otpGenerator = require('otp-generator');
 const { sendEmail } = require('../utils/mailer');
 const ConnectionRequest = require('../models/connectionRequestModel');
 
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 24 * 60 * 60 * 1000,
+    path: "/",
+};
+
+const clearCookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/"
+};
+
 const attachConnectionData = async (userObj) => {
     if (!userObj || !userObj._id) return userObj;
     const userId = userObj._id.toString();
@@ -119,13 +134,7 @@ module.exports.verifyOTP = async (req, res) => {
 
     const token = generateToken(user);
 
-    res.cookie("token", token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        maxAge: 24 * 60 * 60 * 1000,
-        path: "/",
-    });
+    res.cookie("token", token, cookieOptions);
 
     return res.status(200).json({
         message: "Email verified successfully",
@@ -165,21 +174,7 @@ module.exports.loginUser = async (req, res) => {
 
         const { password: pwd, ...userWithoutPassword } = userObj;
 
-        // res.cookie("token", token, {
-        //     httpOnly: true,
-        //     secure: false,
-        //     sameSite: "lax",
-        //     maxAge: 24 * 60 * 60 * 1000,
-        //     path: "/",
-        // });
-
-         res.cookie("token", token, {
-            httpOnly: true,
-            secure: true, // MUST be true for cross-site cookies
-            sameSite: "none", // MUST be "none" if FE and BE are on different domains
-            maxAge: 24 * 60 * 60 * 1000,
-            path: "/",
-        });
+         res.cookie("token", token, cookieOptions);
 
 
 
@@ -206,12 +201,7 @@ module.exports.logoutUser = async (req, res) => {
             await blacklistModel.create({ token });
         }
 
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: false,
-            sameSite: "lax",
-            path: "/"
-        });
+        res.clearCookie("token", clearCookieOptions);
 
         return res.status(200).json({ message: "User Logout Successfully" });
 

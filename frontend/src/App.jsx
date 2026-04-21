@@ -153,7 +153,7 @@ function App() {
           <Route
             path="signup"
             element={
-              !user ? <SignUp /> : <Navigate to="/complete-profile" replace />
+              !user ? <SignUp /> : <Navigate to={user?.isProfileCompleted ? "/" : "/complete-profile"} replace />
             }
           />
 

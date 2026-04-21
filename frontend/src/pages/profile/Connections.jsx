@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { baseUrl } from "../../utils/constants";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,7 @@ const Connections = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
 
-  const fetchConnections = async (isRefetch = false) => {
+  const fetchConnections = React.useCallback(async (isRefetch = false) => {
     if (isRefetch) setIsRefreshing(true);
     try {
       const res = await axios.get(baseUrl + "/api/connections", { withCredentials: true });
@@ -24,7 +24,7 @@ const Connections = () => {
       setIsRefreshing(false);
       setInitialLoading(false);
     }
-  };
+  }, [dispatch]);
 
   const connections = useSelector((store) => store.connections);
 
@@ -56,7 +56,7 @@ const Connections = () => {
 
   useEffect(() => {
     fetchConnections();
-  }, []);
+  }, [fetchConnections]);
 
   if (!connections || initialLoading) return (
     <div className="flex justify-center mt-20">

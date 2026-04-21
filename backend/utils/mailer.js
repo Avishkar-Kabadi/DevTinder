@@ -18,10 +18,15 @@ dbgr(key ? "API Key Loaded" : "API Key Missing");
 
 const sendEmail = async (to, subject, content) => {
     try {
+        if (process.env.NODE_ENV === 'test') {
+            dbgr("Test Environment: Email sending skipped.");
+            dbgr(`Subject: ${subject}, To: ${to}`);
+            return { messageId: "test-email-id" };
+        }
+
         const client = new BrevoClient({
             apiKey: key,
         });
-
 
         const result = await client.transactionalEmails.sendTransacEmail({
             sender: {
