@@ -127,11 +127,11 @@ export default function CallComponent() {
 
     useEffect(() => {
         if (localVideoRef.current && localStream) localVideoRef.current.srcObject = localStream;
-    }, [localStream, callState]);
+    }, [localStream, callState, isVideoOff, isSwapped]);
 
     useEffect(() => {
         if (remoteVideoRef.current && remoteStream) remoteVideoRef.current.srcObject = remoteStream;
-    }, [remoteStream, callState]);
+    }, [remoteStream, callState, isSwapped]);
 
     useEffect(() => {
         if (remoteAudioRef.current && remoteStream && !isVideoCall) {

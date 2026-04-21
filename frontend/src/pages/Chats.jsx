@@ -38,10 +38,6 @@ const Chats = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("messages"); // 'messages' | 'calls'
 
-  useEffect(() => {
-    fetchConversations();
-    fetchCalls();
-  }, [fetchConversations, fetchCalls]);
 
   const fetchCalls = React.useCallback(async () => {
     try {
@@ -80,6 +76,11 @@ const Chats = () => {
       setLoading(false);
     }
   }, [dispatch]);
+
+  useEffect(() => {
+    fetchConversations();
+    fetchCalls();
+  }, [fetchConversations, fetchCalls]);
 
   if (loading && (!conversations || conversations.length === 0)) {
     return (
